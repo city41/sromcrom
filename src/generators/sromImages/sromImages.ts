@@ -37,13 +37,13 @@ const sromImages: ISROMGenerator = {
 	},
 
 	getSROMSourceFiles(rootDir: string, inputJson: Json, tiles: SROMTile[][][]) {
-		const { codeEmit } = inputJson as SromImagesJsonSpec;
+		const { inputs, codeEmit } = inputJson as SromImagesJsonSpec;
 
 		return (codeEmit ?? []).map<FileToWrite>((codeEmit) => {
 			const templatePath = path.resolve(rootDir, codeEmit.template);
 			const template = fs.readFileSync(templatePath).toString();
 
-			const code = ejs.render(template, { tiles });
+			const code = ejs.render(template, { inputs, tiles });
 
 			return {
 				path: path.resolve(rootDir, codeEmit.dest),

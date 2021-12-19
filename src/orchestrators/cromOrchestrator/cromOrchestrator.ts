@@ -1,11 +1,11 @@
 import path from 'path';
 
-import { Palette16Bit } from '../api/palette/types';
-import { CROMTile, ICROMGenerator } from '../api/crom/types';
-import { eyecatcher } from '../eyecatcher';
-import { determinePalettes } from '../orchestratorCommon/determinePalettes';
+import { Palette16Bit } from '../../api/palette/types';
+import { CROMTile, ICROMGenerator } from '../../api/crom/types';
+import { eyecatcher } from '../../generators/eyecatcher';
+import { determinePalettes } from '../common/determinePalettes';
 import { CROMTileSourceResult } from './types';
-import { FileToWrite } from '../types';
+import { FileToWrite } from '../../types';
 import { indexCroms } from './indexCroms';
 import { markCromDupes } from './markCromDupes';
 import { positionCroms } from './positionCroms';

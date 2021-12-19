@@ -1,4 +1,4 @@
-import { CROMTile } from '../api/crom/types';
+import { CROMTile } from '../../api/crom/types';
 import { GeneratorWithCROMTiles } from './types';
 
 function sortByCromIndex(a: CROMTile, b: CROMTile): number {

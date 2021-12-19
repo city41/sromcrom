@@ -1,10 +1,10 @@
-import { Palette16Bit } from '../api/palette/types';
+import { Palette16Bit } from '../../api/palette/types';
 import {
 	CROMTile,
 	CROMTileSource,
 	CROMTileSourceWithPalette,
 	ICROMGenerator,
-} from '../api/crom/types';
+} from '../../api/crom/types';
 
 export type CROMTileSourceResult = {
 	sources: CROMTileSource[][][];

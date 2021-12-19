@@ -1,10 +1,10 @@
-import { Palette16Bit } from '../api/palette/types';
+import { Palette16Bit } from '../../api/palette/types';
 import {
 	SROMTile,
 	SROMTileSource,
 	SROMTileSourceWithPalette,
 	ISROMGenerator,
-} from '../api/srom/types';
+} from '../../api/srom/types';
 
 export type SROMTileSourceResult = {
 	sources: SROMTileSource[][][];

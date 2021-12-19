@@ -1,16 +1,16 @@
 import path from 'path';
 import { createCanvas, NodeCanvasRenderingContext2D } from 'canvas';
-import { CROM_TILE_SIZE_PX } from '../api/crom/constants';
-import { getCanvasContextFromImagePath } from '../api/canvas/canvas';
-import { extractCromTileSources } from '../api/crom/extractCromTileSources';
+import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
+import { getCanvasContextFromImagePath } from '../../api/canvas/canvas';
+import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
 import type {
 	CROMTile,
 	CROMTileSource,
 	ICROMGenerator,
-} from '../api/crom/types';
-import { ISROMGenerator, SROMTile, SROMTileSource } from '../api/srom/types';
-import { extractSromTileSources } from '../api/srom/extractSromTileSources';
-import { SROM_TILE_SIZE_PX } from '../api/srom/constants';
+} from '../../api/crom/types';
+import { ISROMGenerator, SROMTile, SROMTileSource } from '../../api/srom/types';
+import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
+import { SROM_TILE_SIZE_PX } from '../../api/srom/constants';
 
 type EyeCatcherJSONSpec = {
 	mainLogoImageFile: string;

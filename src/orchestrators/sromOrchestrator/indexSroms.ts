@@ -1,5 +1,5 @@
-import { toSROMTile } from '../api/srom/toSROMTile';
-import { SROMTile, SROMTileSourceWithPalette } from '../api/srom/types';
+import { toSROMTile } from '../../api/srom/toSROMTile';
+import { SROMTile, SROMTileSourceWithPalette } from '../../api/srom/types';
 import { GeneratorWithSROMTiles, GeneratorWithSources } from './types';
 
 function createIndexedTiles(

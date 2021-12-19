@@ -1,4 +1,4 @@
-import { SROMTile } from '../api/srom/types';
+import { SROMTile } from '../../api/srom/types';
 import { GeneratorWithSROMTiles } from './types';
 
 function sortBySromIndex(a: SROMTile, b: SROMTile): number {

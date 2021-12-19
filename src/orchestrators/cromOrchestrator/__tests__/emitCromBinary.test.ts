@@ -1,6 +1,6 @@
 import { createCanvas } from 'canvas';
-import { CROM_TILE_HALF_SIZE_BYTES } from '../../api/crom/constants';
-import { CROMTile } from '../../api/crom/types';
+import { CROM_TILE_HALF_SIZE_BYTES } from '../../../api/crom/constants';
+import { CROMTile } from '../../../api/crom/types';
 import { emitCromBinaries } from '../emitCromBinaries';
 
 describe('emitSromBinary', function () {

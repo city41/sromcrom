@@ -1,11 +1,11 @@
 import path from 'path';
 
-import { Palette16Bit } from '../api/palette/types';
-import { ISROMGenerator, SROMTile } from '../api/srom/types';
-import { eyecatcher } from '../eyecatcher';
-import { determinePalettes } from '../orchestratorCommon/determinePalettes';
+import { Palette16Bit } from '../../api/palette/types';
+import { ISROMGenerator, SROMTile } from '../../api/srom/types';
+import { eyecatcher } from '../../generators/eyecatcher';
+import { determinePalettes } from '../common/determinePalettes';
 import { SROMTileSourceResult } from './types';
-import { FileToWrite } from '../types';
+import { FileToWrite } from '../../types';
 import { indexSroms } from './indexSroms';
 import { markSromDupes } from './markSromDupes';
 import { positionSroms } from './positionSroms';

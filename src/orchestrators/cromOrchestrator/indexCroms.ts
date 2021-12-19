@@ -1,5 +1,5 @@
-import { toCROMTile } from '../api/crom/toCROMTile';
-import { CROMTile, CROMTileSourceWithPalette } from '../api/crom/types';
+import { toCROMTile } from '../../api/crom/toCROMTile';
+import { CROMTile, CROMTileSourceWithPalette } from '../../api/crom/types';
 import { GeneratorWithCROMTiles, GeneratorWithSources } from './types';
 
 function createIndexedTiles(

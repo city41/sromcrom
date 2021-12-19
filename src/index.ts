@@ -2,8 +2,8 @@
 
 import path from 'path';
 import { Command } from 'commander';
-import { orchestrate as cromOrchestrate } from './cromOrchestrator';
-import { orchestrate as sromOrchestrate } from './sromOrchestrator';
+import { orchestrate as cromOrchestrate } from './orchestrators/cromOrchestrator';
+import { orchestrate as sromOrchestrate } from './orchestrators/sromOrchestrator';
 import { writeFiles } from './writeFiles';
 
 const packageJson = require('../../package.json');

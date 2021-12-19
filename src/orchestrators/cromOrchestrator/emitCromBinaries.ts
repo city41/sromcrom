@@ -1,5 +1,5 @@
-import { CROM_TILE_HALF_SIZE_BYTES } from '../api/crom/constants';
-import { CROMTile } from '../api/crom/types';
+import { CROM_TILE_HALF_SIZE_BYTES } from '../../api/crom/constants';
+import { CROMTile } from '../../api/crom/types';
 
 function sortByCromIndex(a: CROMTile, b: CROMTile): number {
 	if (a.cromIndex === undefined && b.cromIndex === undefined) {

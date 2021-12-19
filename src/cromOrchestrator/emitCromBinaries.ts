@@ -19,8 +19,8 @@ function sortByCromIndex(a: CROMTile, b: CROMTile): number {
 
 const EMPTY_TILE = new Array(CROM_TILE_HALF_SIZE_BYTES).fill(0);
 
-function emitCromBinaries(allTiles: CROMTile[]) {
-	allTiles.sort(sortByCromIndex);
+function emitCromBinaries(sourceTiles: CROMTile[]) {
+	const allTiles = [...sourceTiles].sort(sortByCromIndex);
 
 	const cEvenData: number[] = [];
 	const cOddData: number[] = [];

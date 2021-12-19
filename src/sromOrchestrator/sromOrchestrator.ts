@@ -45,8 +45,6 @@ function orchestrate(
 		[]
 	);
 
-	// TODO: nothing below handles child auto animation frames yet
-
 	const sromSourcesWithPalettes = determinePalettes(sromSourcesResult);
 
 	// convert the 24bit rgb source canvases into actual SROM Tiles with indexed data

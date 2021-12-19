@@ -1,5 +1,9 @@
-import { SROM_TILE_SIZE_BYTES } from '../api/srom/constants';
+import {
+	FULL_SROM_SIZE_BYTES,
+	SROM_TILE_SIZE_BYTES,
+} from '../api/srom/constants';
 import { SROMTile } from '../api/srom/types';
+import { padTo } from '../api/util/padTo';
 
 function sortBySromIndex(a: SROMTile, b: SROMTile): number {
 	if (a.sromIndex === undefined && b.sromIndex === undefined) {
@@ -19,8 +23,8 @@ function sortBySromIndex(a: SROMTile, b: SROMTile): number {
 
 const EMPTY_TILE = new Array(SROM_TILE_SIZE_BYTES).fill(0);
 
-function emitSromBinary(allTiles: SROMTile[]) {
-	allTiles.sort(sortBySromIndex);
+function emitSromBinary(sourceTiles: SROMTile[]) {
+	const allTiles = [...sourceTiles].sort(sortBySromIndex);
 
 	const sData: number[] = [];
 
@@ -43,7 +47,7 @@ function emitSromBinary(allTiles: SROMTile[]) {
 		++curIndex;
 	}
 
-	return sData;
+	return padTo(sData, FULL_SROM_SIZE_BYTES);
 }
 
 export { emitSromBinary };

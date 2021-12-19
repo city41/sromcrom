@@ -1,9 +1,9 @@
 import {
 	FULL_SROM_SIZE_BYTES,
 	SROM_TILE_SIZE_BYTES,
-} from '../api/srom/constants';
-import { SROMTile } from '../api/srom/types';
-import { padTo } from '../api/util/padTo';
+} from '../../api/srom/constants';
+import { SROMTile } from '../../api/srom/types';
+import { padTo } from '../../api/util/padTo';
 
 function sortBySromIndex(a: SROMTile, b: SROMTile): number {
 	if (a.sromIndex === undefined && b.sromIndex === undefined) {

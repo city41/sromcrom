@@ -1,4 +1,5 @@
-import { CROMTile } from '../api/crom/types';
+import { CROMTile } from '../../api/crom/types';
+import { Json } from '../../types';
 import { GeneratorWithCROMTiles } from './types';
 
 function sortByCromIndex(a: CROMTile, b: CROMTile): number {
@@ -17,10 +18,14 @@ function sortByCromIndex(a: CROMTile, b: CROMTile): number {
 	return a.cromIndex! - b.cromIndex!;
 }
 
-function positionCroms(inputs: GeneratorWithCROMTiles[]) {
+function positionCroms(
+	rootDir: string,
+	json: Json,
+	inputs: GeneratorWithCROMTiles[]
+) {
 	inputs.forEach((input) => {
 		if (input.generator.setCROMPositions) {
-			input.generator.setCROMPositions(input.tiles);
+			input.generator.setCROMPositions(rootDir, json, input.tiles);
 		}
 	});
 

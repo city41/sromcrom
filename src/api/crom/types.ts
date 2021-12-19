@@ -1,5 +1,5 @@
 import { Canvas } from 'canvas';
-import { FileToWrite } from '../../types';
+import { FileToWrite, Json } from '../../types';
 import { Palette16Bit } from '../palette/types';
 
 export type FourAutoAnimationChildFrameSources = [Canvas, Canvas, Canvas];
@@ -100,12 +100,17 @@ export type TiledCROMTile = CROMTile & {
 export type ICROMGenerator = {
 	jsonKey: string;
 
-	getCROMSources: (
+	getCROMSources: (rootDir: string, jsonSpec: Json) => CROMTileSource[][][];
+
+	setCROMPositions?: (
 		rootDir: string,
-		jsonSpec: Record<string, unknown>
-	) => CROMTileSource[][][];
+		jsonSpec: Json,
+		cromTiles: CROMTile[][][]
+	) => void;
 
-	setCROMPositions?: (sourceCroms: CROMTile[][][]) => void;
-
-	getCROMSourceFiles?: () => FileToWrite[];
+	getCROMSourceFiles?: (
+		rootDir: string,
+		jsonSpec: Json,
+		cromTiles: CROMTile[][][]
+	) => FileToWrite[];
 };

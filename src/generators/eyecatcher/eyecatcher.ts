@@ -1,16 +1,17 @@
 import path from 'path';
 import { createCanvas, NodeCanvasRenderingContext2D } from 'canvas';
-import { CROM_TILE_SIZE_PX } from '../api/crom/constants';
-import { getCanvasContextFromImagePath } from '../api/canvas/canvas';
-import { extractCromTileSources } from '../api/crom/extractCromTileSources';
+import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
+import { getCanvasContextFromImagePath } from '../../api/canvas/canvas';
+import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
 import type {
 	CROMTile,
 	CROMTileSource,
 	ICROMGenerator,
-} from '../api/crom/types';
-import { ISROMGenerator, SROMTile, SROMTileSource } from '../api/srom/types';
-import { extractSromTileSources } from '../api/srom/extractSromTileSources';
-import { SROM_TILE_SIZE_PX } from '../api/srom/constants';
+} from '../../api/crom/types';
+import { ISROMGenerator, SROMTile, SROMTileSource } from '../../api/srom/types';
+import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
+import { SROM_TILE_SIZE_PX } from '../../api/srom/constants';
+import { Json } from '../../types';
 
 type EyeCatcherJSONSpec = {
 	mainLogoImageFile: string;
@@ -130,10 +131,7 @@ function widenMainImageByOneTile(
 const eyecatcher: ICROMGenerator & ISROMGenerator = {
 	jsonKey: 'eyecatcher',
 
-	getCROMSources(
-		rootDir: string,
-		jsonSpec: Record<string, unknown>
-	): CROMTileSource[][][] {
+	getCROMSources(rootDir: string, jsonSpec: Json): CROMTileSource[][][] {
 		const { mainLogoImageFile } = jsonSpec as EyeCatcherJSONSpec;
 
 		const cRomImagePath = path.resolve(rootDir, mainLogoImageFile);
@@ -159,7 +157,7 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 		return [extractCromTileSources(finalContext)];
 	},
 
-	getSROMSources(rootDir: string, jsonSpec: Record<string, unknown>) {
+	getSROMSources(rootDir: string, jsonSpec: Json) {
 		const { max330MegaImageFile, proGearSpecImageFile, snkLogoImageFile } =
 			jsonSpec as EyeCatcherJSONSpec;
 
@@ -195,7 +193,7 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 		return sources;
 	},
 
-	setCROMPositions(images: CROMTile[][][]) {
+	setCROMPositions(_rootDir: string, _json: Json, images: CROMTile[][][]) {
 		let eyeCatcherIndex = 0;
 
 		const eyecatcherMainImage = images[0];
@@ -219,8 +217,10 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 		}
 	},
 
-	setSROMPositions(images: SROMTile[][][]) {
-		const max330Image = images.find((i) => {
+	setSROMPositions(_rootDir: string, _json: Json, sromTiles: SROMTile[][][]) {
+		// TODO: use the json to figure out which images are present
+
+		const max330Image = sromTiles.find((i) => {
 			return (
 				i.length === EYECATCHER_MAX_330_MEGA_SIZE_TILES.height &&
 				i[0].length === EYECATCHER_MAX_330_MEGA_SIZE_TILES.width
@@ -231,7 +231,7 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 			setSROMPositions(max330Image, MAX_330_MEGA_TILE_POSITIONS);
 		}
 
-		const proGearImage = images.find((i) => {
+		const proGearImage = sromTiles.find((i) => {
 			return (
 				i.length === EYECATCHER_PRO_GEAR_SPEC_SIZE_TILES.height &&
 				i[0].length === EYECATCHER_PRO_GEAR_SPEC_SIZE_TILES.width
@@ -242,7 +242,7 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 			setSROMPositions(proGearImage, PRO_GEAR_SPEC_TILE_POSITIONS);
 		}
 
-		const companyImage = images.find((i) => {
+		const companyImage = sromTiles.find((i) => {
 			return (
 				i.length === EYECATCHER_COMPANY_LOGO_SIZE_TILES.height &&
 				i[0].length === EYECATCHER_COMPANY_LOGO_SIZE_TILES.width

@@ -1,11 +1,11 @@
 import path from 'path';
 
-import { Palette16Bit } from '../api/palette/types';
-import { CROMTile, ICROMGenerator } from '../api/crom/types';
-import { eyecatcher } from '../eyecatcher';
-import { determinePalettes } from '../orchestratorCommon/determinePalettes';
+import { Palette16Bit } from '../../api/palette/types';
+import { CROMTile, ICROMGenerator } from '../../api/crom/types';
+import { eyecatcher } from '../../generators/eyecatcher';
+import { determinePalettes } from '../common/determinePalettes';
 import { CROMTileSourceResult } from './types';
-import { FileToWrite } from '../types';
+import { FileToWrite, Json } from '../../types';
 import { indexCroms } from './indexCroms';
 import { markCromDupes } from './markCromDupes';
 import { positionCroms } from './positionCroms';
@@ -19,7 +19,7 @@ const availableCROMGenerators = Object.keys(generators);
 
 function orchestrate(
 	rootDir: string,
-	resourceJson: any
+	resourceJson: Json
 ): { palettes: Palette16Bit[]; filesToWrite: FileToWrite[] } {
 	const cromGenerators: ICROMGenerator[] = availableCROMGenerators.reduce<
 		ICROMGenerator[]
@@ -67,7 +67,7 @@ function orchestrate(
 	// croms that must be at a certain location (primarily the eyecatcher) and auto animations
 	// that must be positioned on a multiple of 4 or 8
 	// again done with an in place mutation
-	positionCroms(indexedCromResults);
+	positionCroms(rootDir, resourceJson, indexedCromResults);
 
 	const cromBinaries = emitCromBinaries(allTiles);
 

@@ -1,4 +1,5 @@
-import { SROMTile } from '../api/srom/types';
+import { SROMTile } from '../../api/srom/types';
+import { Json } from '../../types';
 import { GeneratorWithSROMTiles } from './types';
 
 function sortBySromIndex(a: SROMTile, b: SROMTile): number {
@@ -17,10 +18,14 @@ function sortBySromIndex(a: SROMTile, b: SROMTile): number {
 	return a.sromIndex! - b.sromIndex!;
 }
 
-function positionSroms(inputs: GeneratorWithSROMTiles[]) {
+function positionSroms(
+	rootDir: string,
+	json: Json,
+	inputs: GeneratorWithSROMTiles[]
+) {
 	inputs.forEach((input) => {
 		if (input.generator.setSROMPositions) {
-			input.generator.setSROMPositions(input.tiles);
+			input.generator.setSROMPositions(rootDir, json, input.tiles);
 		}
 	});
 

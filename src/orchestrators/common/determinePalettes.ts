@@ -1,8 +1,8 @@
 import { Canvas } from 'canvas';
-import { Palette16Bit } from '../api/palette/types';
-import { TRANSPARENT_16BIT_COLOR } from '../api/palette/transparentColor';
-import { get24BitPalette } from '../api/palette/get24BitPalette';
-import { convertTo16BitPalette } from '../api/palette/convertTo16Bit';
+import { Palette16Bit } from '../../api/palette/types';
+import { TRANSPARENT_16BIT_COLOR } from '../../api/palette/transparentColor';
+import { get24BitPalette } from '../../api/palette/get24BitPalette';
+import { convertTo16BitPalette } from '../../api/palette/convertTo16Bit';
 import uniq from 'lodash/uniq';
 
 // all of the generics in here are so this file can support either crom's or srom's

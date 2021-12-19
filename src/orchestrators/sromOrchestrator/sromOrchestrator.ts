@@ -1,11 +1,11 @@
 import path from 'path';
 
-import { Palette16Bit } from '../api/palette/types';
-import { ISROMGenerator, SROMTile } from '../api/srom/types';
-import { eyecatcher } from '../eyecatcher';
-import { determinePalettes } from '../orchestratorCommon/determinePalettes';
+import { Palette16Bit } from '../../api/palette/types';
+import { ISROMGenerator, SROMTile } from '../../api/srom/types';
+import { eyecatcher } from '../../generators/eyecatcher';
+import { determinePalettes } from '../common/determinePalettes';
 import { SROMTileSourceResult } from './types';
-import { FileToWrite } from '../types';
+import { FileToWrite, Json } from '../../types';
 import { indexSroms } from './indexSroms';
 import { markSromDupes } from './markSromDupes';
 import { positionSroms } from './positionSroms';
@@ -18,7 +18,7 @@ const availableSROMGenerators = Object.keys(generators);
 
 function orchestrate(
 	rootDir: string,
-	resourceJson: any
+	resourceJson: Json
 ): { palettes: Palette16Bit[]; filesToWrite: FileToWrite[] } {
 	const sromGenerators: ISROMGenerator[] = availableSROMGenerators.reduce<
 		ISROMGenerator[]
@@ -65,7 +65,7 @@ function orchestrate(
 	// croms that must be at a certain location (primarily the eyecatcher) and auto animations
 	// that must be positioned on a multiple of 4 or 8
 	// again done with an in place mutation
-	positionSroms(indexedSromResults);
+	positionSroms(rootDir, resourceJson, indexedSromResults);
 
 	const sromBinaryData = emitSromBinary(allTiles);
 	const sromFileToWrite: FileToWrite = {

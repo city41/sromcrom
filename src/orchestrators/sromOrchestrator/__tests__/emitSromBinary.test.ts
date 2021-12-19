@@ -2,8 +2,8 @@ import { createCanvas } from 'canvas';
 import {
 	FULL_SROM_SIZE_BYTES,
 	SROM_TILE_SIZE_BYTES,
-} from '../../api/srom/constants';
-import { SROMTile } from '../../api/srom/types';
+} from '../../../api/srom/constants';
+import { SROMTile } from '../../../api/srom/types';
 import { emitSromBinary } from '../emitSromBinary';
 
 describe('emitSromBinary', function () {

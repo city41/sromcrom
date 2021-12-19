@@ -1,0 +1,5 @@
+testRoms
+node_modules
+lib
+yarn-error.log
+.idea/

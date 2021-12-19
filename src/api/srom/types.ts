@@ -1,5 +1,5 @@
 import { Canvas } from 'canvas';
-import { FileToWrite } from '../../types';
+import { FileToWrite, Json } from '../../types';
 import { Palette16Bit } from '../palette/types';
 
 export type SROMTileSource = {
@@ -47,12 +47,17 @@ export type SROMTile = SROMTileSourceWithPalette & {
 export type ISROMGenerator = {
 	jsonKey: string;
 
-	getSROMSources: (
+	getSROMSources: (rootDir: string, jsonSpec: Json) => SROMTileSource[][][];
+
+	setSROMPositions?: (
 		rootDir: string,
-		jsonSpec: Record<string, unknown>
-	) => SROMTileSource[][][];
+		jsonSpec: Json,
+		sourceSROMs: SROMTile[][][]
+	) => void;
 
-	setSROMPositions?: (sourceSROMs: SROMTile[][][]) => void;
-
-	getSROMSourceFiles?: () => FileToWrite[];
+	getSROMSourceFiles?: (
+		rootDir: string,
+		jsonSpec: Json,
+		sromTiles: SROMTile[][][]
+	) => FileToWrite[];
 };

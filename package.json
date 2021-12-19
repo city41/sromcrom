@@ -17,11 +17,11 @@
 		"typescript": "^4.5.4"
 	},
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
+		"test": "yarn jest",
 		"build": "tsc",
 		"type-check": "tsc --noemit",
 		"start": "ts-node ./src/index.ts",
 		"testData": "mkdir -p testData/out && ts-node ./src/index.ts -i ./testData/sprites.json -o ./testData/out",
-		"xprepublish": "npm run build"
+		"prepublish": "npm run build"
 	}
 }

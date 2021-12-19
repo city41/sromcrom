@@ -2,7 +2,6 @@ import path from 'path';
 
 import { Palette16Bit } from '../../api/palette/types';
 import { ISROMGenerator, SROMTile } from '../../api/srom/types';
-import { eyecatcher } from '../../generators/eyecatcher';
 import { determinePalettes } from '../common/determinePalettes';
 import { SROMTileSourceResult } from './types';
 import { FileToWrite, Json } from '../../types';
@@ -10,9 +9,12 @@ import { indexSroms } from './indexSroms';
 import { markSromDupes } from './markSromDupes';
 import { positionSroms } from './positionSroms';
 import { emitSromBinary } from './emitSromBinary';
+import { eyecatcher } from '../../generators/eyecatcher';
+import { sromImages } from '../../generators/sromImages';
 
 const generators: Record<string, ISROMGenerator> = {
 	eyecatcher,
+	sromImages,
 };
 const availableSROMGenerators = Object.keys(generators);
 
@@ -33,8 +35,8 @@ function orchestrate(
 	const sromSourcesResult = sromGenerators.reduce<SROMTileSourceResult[]>(
 		(building, generator) => {
 			const sources = generator.getSROMSources(
-				process.cwd(),
-				resourceJson[generator.jsonKey] as Record<string, unknown>
+				rootDir,
+				resourceJson[generator.jsonKey] as Json
 			);
 
 			return building.concat({
@@ -73,9 +75,26 @@ function orchestrate(
 		contents: Buffer.from(new Uint8Array(sromBinaryData)),
 	};
 
+	const otherFilesToWrite = indexedSromResults.reduce<FileToWrite[]>(
+		(building, sromResult) => {
+			if (sromResult.generator.getSROMSourceFiles) {
+				return building.concat(
+					sromResult.generator.getSROMSourceFiles(
+						rootDir,
+						resourceJson[sromResult.generator.jsonKey] as Json,
+						sromResult.tiles
+					)
+				);
+			} else {
+				return building;
+			}
+		},
+		[]
+	);
+
 	return {
 		palettes: sromSourcesWithPalettes.finalPalettes,
-		filesToWrite: [sromFileToWrite],
+		filesToWrite: [sromFileToWrite].concat(otherFilesToWrite),
 	};
 }
 

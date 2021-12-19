@@ -34,7 +34,7 @@ function orchestrate(
 	const cromSourcesResult = cromGenerators.reduce<CROMTileSourceResult[]>(
 		(building, generator) => {
 			const sources = generator.getCROMSources(
-				process.cwd(),
+				rootDir,
 				resourceJson[generator.jsonKey] as Record<string, unknown>
 			);
 

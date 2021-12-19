@@ -6,7 +6,7 @@ import { orchestrate as cromOrchestrate } from './orchestrators/cromOrchestrator
 import { orchestrate as sromOrchestrate } from './orchestrators/sromOrchestrator';
 import { writeFiles } from './writeFiles';
 
-const packageJson = require('../../package.json');
+const packageJson = require('../package.json');
 
 const program = new Command();
 
@@ -28,7 +28,7 @@ if (!options.input) {
 const inputJsonPath = path.join(process.cwd(), options.input);
 const resourceJson = require(inputJsonPath);
 
-const rootDir = process.cwd();
+const rootDir = path.dirname(inputJsonPath);
 const sromOrchestrateResult = sromOrchestrate(rootDir, resourceJson);
 const cromOrchestrateResult = cromOrchestrate(rootDir, resourceJson);
 

@@ -1,10 +1,5 @@
-import {
-	BLACK24,
-	WHITE24,
-	getTestCanvas,
-	MAGENTA24,
-	RED24,
-} from '../../../testUtil';
+import { getTestCanvas } from '../../../testUtil';
+import { BLACK24, MAGENTA24, RED24, WHITE24 } from '../colors';
 import { get24BitPalette } from '../get24BitPalette';
 
 describe('get24BitPalette', function () {

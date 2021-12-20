@@ -1,7 +1,7 @@
 import { Canvas } from 'canvas';
 import { Color24Bit, Palette24Bit } from './types';
 import uniqBy from 'lodash/uniqBy';
-import { TRANSPARENT_24BIT_COLOR } from './transparentColor';
+import { TRANSPARENT_24BIT_COLOR } from './colors';
 import { isEqual } from 'lodash';
 
 export function raw24BitColorToString(r24c: Color24Bit): string {

@@ -1,9 +1,10 @@
 import { Canvas } from 'canvas';
 import { Palette16Bit } from '../../api/palette/types';
-import { TRANSPARENT_16BIT_COLOR } from '../../api/palette/transparentColor';
+import { BLACK16, TRANSPARENT_16BIT_COLOR } from '../../api/palette/colors';
 import { get24BitPalette } from '../../api/palette/get24BitPalette';
 import { convertTo16BitPalette } from '../../api/palette/convertTo16Bit';
 import uniq from 'lodash/uniq';
+import isEqual from 'lodash/isEqual';
 
 // all of the generics in here are so this file can support either crom's or srom's
 // T is either a CROM source or an SROM source, of which we just need the canvas that is
@@ -46,10 +47,10 @@ type PaletteString = string;
 
 type PaletteMap<T> = Map<Palette16Bit, T[]>;
 
-function sortPalette(r16: Palette16Bit): Palette16Bit {
-	const sortedArray = [...r16];
+function sortPalette(palette: Palette16Bit): Palette16Bit {
+	const cloned = [...palette];
 
-	sortedArray.sort((a, b) => {
+	cloned.sort((a, b) => {
 		if (a === TRANSPARENT_16BIT_COLOR) {
 			return -1;
 		}
@@ -61,7 +62,7 @@ function sortPalette(r16: Palette16Bit): Palette16Bit {
 		return a - b;
 	});
 
-	return uniq(sortedArray) as Palette16Bit;
+	return uniq(cloned) as Palette16Bit;
 }
 
 function buildPaletteMap<T extends BaseTileSource>(
@@ -98,7 +99,10 @@ function buildPaletteMap<T extends BaseTileSource>(
 
 function mergeTwoPalettes(pa: Palette16Bit, pb: Palette16Bit): Palette16Bit {
 	const merged = pa.concat(pb);
-	return sortPalette(merged as Palette16Bit);
+
+	const finalMerged = sortPalette(merged as Palette16Bit);
+
+	return finalMerged;
 }
 
 function mergePalettes<T extends BaseTileSource>(
@@ -123,6 +127,7 @@ function mergePalettes<T extends BaseTileSource>(
 				// since k got merged into i, remove it from allPalettes
 				allPalettes.splice(k, 1);
 				iSources = iSources!.concat(kSources!);
+				iPalette = mergedPalette;
 			} else {
 				++k;
 			}
@@ -142,7 +147,7 @@ function padTo16Values(palette: Palette16Bit): Palette16Bit {
 	const newPalette = [...palette];
 
 	while (newPalette.length < 16) {
-		newPalette.push(0);
+		newPalette.push(BLACK16);
 	}
 
 	return newPalette as Palette16Bit;

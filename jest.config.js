@@ -11,4 +11,5 @@ module.exports = {
 			tsconfig: 'tsconfig.jest.json',
 		},
 	},
+	testMatch: ['**/__tests__/**/*.test.ts'],
 };

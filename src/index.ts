@@ -4,7 +4,9 @@ import path from 'path';
 import { Command } from 'commander';
 import { orchestrate as cromOrchestrate } from './orchestrators/cromOrchestrator';
 import { orchestrate as sromOrchestrate } from './orchestrators/sromOrchestrator';
+import { orchestrate as paletteOrchestrate } from './orchestrators/paletteOrchestrator';
 import { writeFiles } from './writeFiles';
+import { Palette16Bit } from './api/palette/types';
 
 const packageJson = require('../package.json');
 
@@ -38,6 +40,18 @@ const cromOrchestrateResult = cromOrchestrate(
 	1 + sromOrchestrateResult.palettes.length
 );
 
+const sromAndCromPalettes: Palette16Bit[] =
+	sromOrchestrateResult.palettes.concat(cromOrchestrateResult.palettes);
+
+const paletteOrchestrateResult = paletteOrchestrate(
+	rootDir,
+	resourceJson,
+	sromAndCromPalettes
+);
+
 writeFiles(
-	cromOrchestrateResult.filesToWrite.concat(sromOrchestrateResult.filesToWrite)
+	cromOrchestrateResult.filesToWrite.concat(
+		sromOrchestrateResult.filesToWrite,
+		paletteOrchestrateResult.filesToWrite
+	)
 );

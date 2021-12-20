@@ -4,16 +4,11 @@ import ejs from 'ejs';
 import { getCanvasContextFromImagePath } from '../../api/canvas';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
 import { ISROMGenerator, SROMTile, SROMTileSource } from '../../api/srom/types';
-import { FileToWrite, Json } from '../../types';
+import { CodeEmit, FileToWrite, Json } from '../../types';
 
 type SromImageInput = {
 	name: string;
 	imageFile: string;
-};
-
-type CodeEmit = {
-	template: string;
-	dest: string;
 };
 
 type SromImagesJsonSpec = {

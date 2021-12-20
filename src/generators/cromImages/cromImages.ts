@@ -17,6 +17,43 @@ type CromImagesJsonSpec = {
 	codeEmit?: CodeEmit[];
 };
 
+type CodeEmitTile = {
+	index: number;
+	paletteIndex: number;
+	autoAnimation?: 4 | 8;
+};
+
+type CodeEmitImage = {
+	name: string;
+	imageFile: string;
+	tiles: CodeEmitTile[][];
+};
+
+function toCodeEmitTiles(inputTiles: CROMTile[][]): CodeEmitTile[][] {
+	return inputTiles.map((inputRow) => {
+		return inputRow.map((inputTile) => {
+			return {
+				index: inputTile.cromIndex!,
+				paletteIndex: inputTile.paletteIndex,
+			};
+		});
+	});
+}
+
+function createImageDataForCodeEmit(
+	inputs: CromImageInput[],
+	tiles: CROMTile[][][]
+): CodeEmitImage[] {
+	const finalTiles = denormalizeDupes(tiles, 'cromIndex');
+
+	return inputs.map((input, i) => {
+		return {
+			...input,
+			tiles: toCodeEmitTiles(finalTiles[i]),
+		};
+	});
+}
+
 const cromImages: ICROMGenerator = {
 	jsonKey: 'cromImages',
 
@@ -35,13 +72,13 @@ const cromImages: ICROMGenerator = {
 	getCROMSourceFiles(rootDir: string, inputJson: Json, tiles: CROMTile[][][]) {
 		const { inputs, codeEmit } = inputJson as CromImagesJsonSpec;
 
-		const finalTiles = denormalizeDupes(tiles, 'cromIndex');
+		const images = createImageDataForCodeEmit(inputs, tiles);
 
 		return (codeEmit ?? []).map<FileToWrite>((codeEmit) => {
 			const templatePath = path.resolve(rootDir, codeEmit.template);
 			const template = fs.readFileSync(templatePath).toString();
 
-			const code = ejs.render(template, { inputs, tiles: finalTiles });
+			const code = ejs.render(template, { images });
 
 			return {
 				path: path.resolve(rootDir, codeEmit.dest),

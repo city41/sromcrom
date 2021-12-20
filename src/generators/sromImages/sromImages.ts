@@ -17,6 +17,43 @@ type SromImagesJsonSpec = {
 	codeEmit?: CodeEmit[];
 };
 
+type CodeEmitTile = {
+	index: number;
+	paletteIndex: number;
+	autoAnimation?: 4 | 8;
+};
+
+type CodeEmitImage = {
+	name: string;
+	imageFile: string;
+	tiles: CodeEmitTile[][];
+};
+
+function toCodeEmitTiles(inputTiles: SROMTile[][]): CodeEmitTile[][] {
+	return inputTiles.map((inputRow) => {
+		return inputRow.map((inputTile) => {
+			return {
+				index: inputTile.sromIndex!,
+				paletteIndex: inputTile.paletteIndex,
+			};
+		});
+	});
+}
+
+function createImageDataForCodeEmit(
+	inputs: SromImageInput[],
+	tiles: SROMTile[][][]
+): CodeEmitImage[] {
+	const finalTiles = denormalizeDupes(tiles, 'sromIndex');
+
+	return inputs.map((input, i) => {
+		return {
+			...input,
+			tiles: toCodeEmitTiles(finalTiles[i]),
+		};
+	});
+}
+
 const sromImages: ISROMGenerator = {
 	jsonKey: 'sromImages',
 
@@ -35,13 +72,13 @@ const sromImages: ISROMGenerator = {
 	getSROMSourceFiles(rootDir: string, inputJson: Json, tiles: SROMTile[][][]) {
 		const { inputs, codeEmit } = inputJson as SromImagesJsonSpec;
 
-		const finalTiles = denormalizeDupes(tiles, 'sromIndex');
+		const images = createImageDataForCodeEmit(inputs, tiles);
 
 		return (codeEmit ?? []).map<FileToWrite>((codeEmit) => {
 			const templatePath = path.resolve(rootDir, codeEmit.template);
 			const template = fs.readFileSync(templatePath).toString();
 
-			const code = ejs.render(template, { inputs, tiles: finalTiles });
+			const code = ejs.render(template, { images });
 
 			return {
 				path: path.resolve(rootDir, codeEmit.dest),

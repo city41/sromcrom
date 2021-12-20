@@ -1,5 +1,6 @@
 import path from 'path';
 import { createCanvas, NodeCanvasRenderingContext2D } from 'canvas';
+import { TRANSPARENT_24BIT_COLOR } from '../../api/palette/colors';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { getCanvasContextFromImagePath } from '../../api/canvas/canvas';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
@@ -12,6 +13,7 @@ import { ISROMGenerator, SROMTile, SROMTileSource } from '../../api/srom/types';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
 import { SROM_TILE_SIZE_PX } from '../../api/srom/constants';
 import { Json } from '../../types';
+import { isEqual } from 'lodash';
 
 type EyeCatcherJSONSpec = {
 	mainLogoImageFile: string;
@@ -128,6 +130,28 @@ function widenMainImageByOneTile(
 	return destContext;
 }
 
+function isTileForFFBlank(sromTileSources: SROMTileSource[][]): boolean {
+	const tile = sromTileSources[0][4];
+
+	const context = tile.source.getContext('2d');
+	const imageData = context.getImageData(
+		0,
+		0,
+		tile.source.width,
+		tile.source.height
+	);
+
+	for (let p = 0; p < imageData.data.length; p += 4) {
+		const pixel = Array.from(imageData.data.slice(p, p + 4));
+
+		if (!isEqual(pixel, TRANSPARENT_24BIT_COLOR)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 const eyecatcher: ICROMGenerator & ISROMGenerator = {
 	jsonKey: 'eyecatcher',
 
@@ -173,12 +197,17 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 		}
 
 		if (proGearSpecImageFile) {
-			sources.push(
-				getSROMSource(
-					path.resolve(rootDir, proGearSpecImageFile),
-					EYECATCHER_PRO_GEAR_SPEC_SIZE_PX
-				)
+			const proGearSource = getSROMSource(
+				path.resolve(rootDir, proGearSpecImageFile),
+				EYECATCHER_PRO_GEAR_SPEC_SIZE_PX
 			);
+			sources.push(proGearSource);
+
+			if (!isTileForFFBlank(proGearSource)) {
+				console.warn(
+					'proGearSpecImageFile: the tile that will be placed at 0xff in the SROM binary (at {64px,0px} in the image) is not blank. That tile will be drawn over the entire fix layer in many situations.'
+				);
+			}
 		}
 
 		if (snkLogoImageFile) {

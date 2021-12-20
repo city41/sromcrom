@@ -163,7 +163,8 @@ function assignPalettesForGenerators<TTileSource extends BaseTileSource, G>(
 	sourceResults: BaseResult<TTileSource, G>[],
 	allSources: TTileSource[],
 	paletteMap: PaletteMap<TTileSource>,
-	finalPalettes: Palette16Bit[]
+	finalPalettes: Palette16Bit[],
+	paletteStartIndex: number
 ): Array<{
 	sourcesWithPalettes: BaseTileSourceWithPalette<TTileSource>[][][];
 	generator: G;
@@ -186,7 +187,7 @@ function assignPalettesForGenerators<TTileSource extends BaseTileSource, G>(
 		const sourceWithPalette = {
 			...source,
 			palette,
-			paletteIndex: finalPalettes.indexOf(palette),
+			paletteIndex: finalPalettes.indexOf(palette) + paletteStartIndex,
 		};
 		sourceToSourceWithPalette.set(source, sourceWithPalette);
 	});
@@ -208,7 +209,8 @@ function assignPalettesForGenerators<TTileSource extends BaseTileSource, G>(
 }
 
 function determinePalettes<TTileSource extends BaseTileSource, G>(
-	sourceResults: BaseTileSourceResult<TTileSource, G>[]
+	sourceResults: BaseTileSourceResult<TTileSource, G>[],
+	paletteStartIndex: number
 ): BaseTileSourceWithPalettesResult<TTileSource, G> {
 	// we need to associate a CROMTileSource to its generator, so first build
 	// a map that lets us do that
@@ -251,7 +253,8 @@ function determinePalettes<TTileSource extends BaseTileSource, G>(
 		sourceResults,
 		allSources,
 		mergedPaletteMap,
-		finalPalettesNotYetPadded
+		finalPalettesNotYetPadded,
+		paletteStartIndex
 	);
 
 	return {

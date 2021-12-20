@@ -19,7 +19,8 @@ const availableCROMGenerators = Object.keys(generators);
 
 function orchestrate(
 	rootDir: string,
-	resourceJson: Json
+	resourceJson: Json,
+	palettesStartingIndex: number
 ): { palettes: Palette16Bit[]; filesToWrite: FileToWrite[] } {
 	const cromGenerators: ICROMGenerator[] = availableCROMGenerators.reduce<
 		ICROMGenerator[]
@@ -48,7 +49,10 @@ function orchestrate(
 
 	// TODO: nothing below handles child auto animation frames yet
 
-	const cromSourcesWithPalettes = determinePalettes(cromSourcesResult);
+	const cromSourcesWithPalettes = determinePalettes(
+		cromSourcesResult,
+		palettesStartingIndex
+	);
 
 	// convert the 24bit rgb source canvases into actual CROM Tiles with indexed data
 	// making sure to keep associating a tile with the generator that initially provided it

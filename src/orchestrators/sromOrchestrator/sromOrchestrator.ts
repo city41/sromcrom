@@ -20,7 +20,8 @@ const availableSROMGenerators = Object.keys(generators);
 
 function orchestrate(
 	rootDir: string,
-	resourceJson: Json
+	resourceJson: Json,
+	palettesStartingIndex: number
 ): { palettes: Palette16Bit[]; filesToWrite: FileToWrite[] } {
 	const sromGenerators: ISROMGenerator[] = availableSROMGenerators.reduce<
 		ISROMGenerator[]
@@ -47,7 +48,10 @@ function orchestrate(
 		[]
 	);
 
-	const sromSourcesWithPalettes = determinePalettes(sromSourcesResult);
+	const sromSourcesWithPalettes = determinePalettes(
+		sromSourcesResult,
+		palettesStartingIndex
+	);
 
 	// convert the 24bit rgb source canvases into actual SROM Tiles with indexed data
 	// making sure to keep associating a tile with the generator that initially provided it

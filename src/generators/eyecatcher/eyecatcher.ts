@@ -20,6 +20,7 @@ type EyeCatcherJSONSpec = {
 	max330MegaImageFile?: string;
 	proGearSpecImageFile?: string;
 	snkLogoImageFile?: string;
+	copyrightCharacter?: string;
 };
 
 type Size = {
@@ -62,6 +63,14 @@ const EYECATCHER_COMPANY_LOGO_SIZE_PX = {
 	width: EYECATCHER_COMPANY_LOGO_SIZE_TILES.width * SROM_TILE_SIZE_PX,
 	height: EYECATCHER_COMPANY_LOGO_SIZE_TILES.height * SROM_TILE_SIZE_PX,
 };
+const EYECATCHER_COPYRIGHT_SIZE_TILES = {
+	width: 1,
+	height: 1,
+};
+const EYECATCHER_COPYRIGHT_SIZE_PX = {
+	width: EYECATCHER_COPYRIGHT_SIZE_TILES.width * SROM_TILE_SIZE_PX,
+	height: EYECATCHER_COPYRIGHT_SIZE_TILES.height * SROM_TILE_SIZE_PX,
+};
 
 // taken from https://wiki.neogeodev.org/index.php?title=Eyecatcher
 const MAX_330_MEGA_TILE_POSITIONS = [
@@ -91,6 +100,8 @@ const COMPANY_LOGO_TILE_POSITIONS = [
 	[0x20a, 0x20b, 0x20c, 0x20d, 0x20e, 0x20f, 0x214, 0x215, 0x216, 0x217],
 	[0x218, 0x219, 0x21a, 0x21b, 0x21c, 0x21d, 0x21e, 0x21f, 0x240, 0x25e],
 ];
+
+const COPYRIGHT_TILE_POSITIONS = [[0x7b]];
 
 function getSROMSource(
 	imagePath: string,
@@ -182,8 +193,12 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 	},
 
 	getSROMSources(rootDir: string, jsonSpec: Json) {
-		const { max330MegaImageFile, proGearSpecImageFile, snkLogoImageFile } =
-			jsonSpec as EyeCatcherJSONSpec;
+		const {
+			max330MegaImageFile,
+			proGearSpecImageFile,
+			snkLogoImageFile,
+			copyrightCharacter,
+		} = jsonSpec as EyeCatcherJSONSpec;
 
 		const sources: SROMTileSource[][][] = [];
 
@@ -215,6 +230,15 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 				getSROMSource(
 					path.resolve(rootDir, snkLogoImageFile),
 					EYECATCHER_COMPANY_LOGO_SIZE_PX
+				)
+			);
+		}
+
+		if (copyrightCharacter) {
+			sources.push(
+				getSROMSource(
+					path.resolve(rootDir, copyrightCharacter),
+					EYECATCHER_COPYRIGHT_SIZE_PX
 				)
 			);
 		}
@@ -280,6 +304,17 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 
 		if (companyImage) {
 			setSROMPositions(companyImage, COMPANY_LOGO_TILE_POSITIONS);
+		}
+
+		const copyrightImage = sromTiles.find((i) => {
+			return (
+				i.length === EYECATCHER_COPYRIGHT_SIZE_TILES.height &&
+				i[0].length === EYECATCHER_COPYRIGHT_SIZE_TILES.width
+			);
+		});
+
+		if (copyrightImage) {
+			setSROMPositions(copyrightImage, COPYRIGHT_TILE_POSITIONS);
 		}
 	},
 };

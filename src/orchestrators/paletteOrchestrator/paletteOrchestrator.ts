@@ -5,7 +5,7 @@ import { Palette16Bit } from '../../api/palette/types';
 import { BLACK_PALETTE } from '../../api/palette/blackPalette';
 import { CodeEmit, FileToWrite, Json } from '../../types';
 
-type PaletteCodeEmitSpec = {
+type PalettesSpec = {
 	codeEmit?: CodeEmit[];
 };
 
@@ -16,7 +16,7 @@ function orchestrate(
 ): { filesToWrite: FileToWrite[] } {
 	const finalPalettes = [BLACK_PALETTE].concat(palettes);
 
-	const { codeEmit } = resourceJson.paletteCodeEmit as PaletteCodeEmitSpec;
+	const { codeEmit } = resourceJson.palettes as PalettesSpec;
 
 	const filesToWrite = (codeEmit ?? []).map<FileToWrite>((codeEmit) => {
 		const templatePath = path.resolve(rootDir, codeEmit.template);

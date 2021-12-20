@@ -8,6 +8,9 @@ describe('convertTo16BitColor', function () {
 
 		const green24: Color24Bit = [0, 255, 0, 255];
 		expect(convertTo16BitColor(green24)).toEqual(0x20f0);
+
+		const white24: Color24Bit = [255, 255, 255, 255];
+		expect(convertTo16BitColor(white24)).toEqual(0x7fff);
 	});
 
 	it('should ignore the alpha channel', function () {
@@ -16,6 +19,9 @@ describe('convertTo16BitColor', function () {
 
 		const green24: Color24Bit = [0, 255, 0, 0];
 		expect(convertTo16BitColor(green24)).toEqual(0x20f0);
+
+		const white24: Color24Bit = [255, 255, 255, 0];
+		expect(convertTo16BitColor(white24)).toEqual(0x7fff);
 	});
 });
 

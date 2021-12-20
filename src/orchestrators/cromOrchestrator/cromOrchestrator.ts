@@ -2,7 +2,6 @@ import path from 'path';
 
 import { Palette16Bit } from '../../api/palette/types';
 import { CROMTile, ICROMGenerator } from '../../api/crom/types';
-import { eyecatcher } from '../../generators/eyecatcher';
 import { determinePalettes } from '../common/determinePalettes';
 import { CROMTileSourceResult } from './types';
 import { FileToWrite, Json } from '../../types';
@@ -11,9 +10,13 @@ import { markCromDupes } from './markCromDupes';
 import { positionCroms } from './positionCroms';
 import { emitCromBinaries } from './emitCromBinaries';
 
+import { eyecatcher } from '../../generators/eyecatcher';
+import { tilesets } from '../../generators/tilesets';
+
 // create crom tile generators based on what is in the json file
 const generators: Record<string, ICROMGenerator> = {
 	eyecatcher,
+	tilesets,
 };
 const availableCROMGenerators = Object.keys(generators);
 
@@ -87,9 +90,26 @@ function orchestrate(
 		},
 	];
 
+	const otherFilesToWrite = indexedCromResults.reduce<FileToWrite[]>(
+		(building, sromResult) => {
+			if (sromResult.generator.getCROMSourceFiles) {
+				return building.concat(
+					sromResult.generator.getCROMSourceFiles(
+						rootDir,
+						resourceJson[sromResult.generator.jsonKey] as Json,
+						sromResult.tiles
+					)
+				);
+			} else {
+				return building;
+			}
+		},
+		[]
+	);
+
 	return {
 		palettes: cromSourcesWithPalettes.finalPalettes,
-		filesToWrite: cromFilesToWrite,
+		filesToWrite: cromFilesToWrite.concat(otherFilesToWrite),
 	};
 }
 

@@ -159,19 +159,30 @@ function findPalette<T extends BaseTileSource>(
 	return entry![0];
 }
 
-function assignPalettesForGenerators<T extends BaseTileSource, G>(
-	cromSourceResults: BaseResult<T, G>[],
-	allCROMSources: T[],
-	paletteMap: PaletteMap<T>,
+function assignPalettesForGenerators<TTileSource extends BaseTileSource, G>(
+	sourceResults: BaseResult<TTileSource, G>[],
+	allSources: TTileSource[],
+	paletteMap: PaletteMap<TTileSource>,
 	finalPalettes: Palette16Bit[]
 ): Array<{
-	sourcesWithPalettes: BaseTileSourceWithPalette<T>[][][];
+	sourcesWithPalettes: BaseTileSourceWithPalette<TTileSource>[][][];
 	generator: G;
 }> {
-	const sourceToSourceWithPalette = new Map<T, BaseTileSourceWithPalette<T>>();
+	const sourceToSourceWithPalette = new Map<
+		TTileSource,
+		BaseTileSourceWithPalette<TTileSource>
+	>();
 
-	allCROMSources.forEach((source) => {
+	allSources.forEach((source) => {
 		const palette = findPalette(source, paletteMap);
+		const paletteIndex = finalPalettes.indexOf(palette);
+
+		if (paletteIndex < 0) {
+			throw new Error(
+				'determinePalette#assignPalettesForGenerators: failed to find a palette for a source'
+			);
+		}
+
 		const sourceWithPalette = {
 			...source,
 			palette,
@@ -180,7 +191,7 @@ function assignPalettesForGenerators<T extends BaseTileSource, G>(
 		sourceToSourceWithPalette.set(source, sourceWithPalette);
 	});
 
-	return cromSourceResults.map((cromSourceResult) => {
+	return sourceResults.map((cromSourceResult) => {
 		const sourcesWithPalettes = cromSourceResult.sources.map((sourceImage) => {
 			return sourceImage.map((sourceRow) => {
 				return sourceRow.map((source) => {
@@ -196,16 +207,19 @@ function assignPalettesForGenerators<T extends BaseTileSource, G>(
 	});
 }
 
-function determinePalettes<T extends BaseTileSource, G>(
-	sourceResults: BaseTileSourceResult<T, G>[]
-): BaseTileSourceWithPalettesResult<T, G> {
+function determinePalettes<TTileSource extends BaseTileSource, G>(
+	sourceResults: BaseTileSourceResult<TTileSource, G>[]
+): BaseTileSourceWithPalettesResult<TTileSource, G> {
 	// we need to associate a CROMTileSource to its generator, so first build
 	// a map that lets us do that
-	const sourceToResult = new Map<T, BaseTileSourceResult<T, G>>();
+	const sourceToResult = new Map<
+		TTileSource,
+		BaseTileSourceResult<TTileSource, G>
+	>();
 
 	// extract all crom sources out into a single dimension array, which is the input
 	// for figuring out our palettes
-	const allSources: T[] = [];
+	const allSources: TTileSource[] = [];
 
 	sourceResults.forEach((sourceResult) => {
 		const sources = sourceResult.sources.flat(2);
@@ -229,7 +243,7 @@ function determinePalettes<T extends BaseTileSource, G>(
 	// the merged palettes are the final palettes that will get loaded into the
 	// neo geo, so extract them out into an array, padding palettes as needed.
 	// this array is ideal for dumping straight into C code
-	const finalPalettes = Array.from(mergedPaletteMap.keys()).map(padTo16Values);
+	const finalPalettesNotYetPadded = Array.from(mergedPaletteMap.keys());
 
 	// for each generator, convert their sources into sources-with-palettes
 	// later these sources-with-palettes will be used to build the actual CROM data
@@ -237,12 +251,12 @@ function determinePalettes<T extends BaseTileSource, G>(
 		sourceResults,
 		allSources,
 		mergedPaletteMap,
-		finalPalettes
+		finalPalettesNotYetPadded
 	);
 
 	return {
 		generatorResults,
-		finalPalettes,
+		finalPalettes: finalPalettesNotYetPadded.map(padTo16Values),
 	};
 }
 

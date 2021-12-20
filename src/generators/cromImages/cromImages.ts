@@ -2,40 +2,40 @@ import fs from 'fs';
 import path from 'path';
 import ejs from 'ejs';
 import { getCanvasContextFromImagePath } from '../../api/canvas';
-import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
-import { ISROMGenerator, SROMTile, SROMTileSource } from '../../api/srom/types';
+import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
+import { ICROMGenerator, CROMTile, CROMTileSource } from '../../api/crom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { CodeEmit, FileToWrite, Json } from '../../types';
 
-type SromImageInput = {
+type CromImageInput = {
 	name: string;
 	imageFile: string;
 };
 
-type SromImagesJsonSpec = {
-	inputs: SromImageInput[];
+type CromImagesJsonSpec = {
+	inputs: CromImageInput[];
 	codeEmit?: CodeEmit[];
 };
 
-const sromImages: ISROMGenerator = {
-	jsonKey: 'sromImages',
+const cromImages: ICROMGenerator = {
+	jsonKey: 'cromImages',
 
-	getSROMSources(rootDir: string, inputJson: Json): SROMTileSource[][][] {
-		const { inputs } = inputJson as SromImagesJsonSpec;
+	getCROMSources(rootDir: string, inputJson: Json): CROMTileSource[][][] {
+		const { inputs } = inputJson as CromImagesJsonSpec;
 
 		return inputs.map((input) => {
 			const context = getCanvasContextFromImagePath(
 				path.resolve(rootDir, input.imageFile)
 			);
 
-			return extractSromTileSources(context);
+			return extractCromTileSources(context);
 		});
 	},
 
-	getSROMSourceFiles(rootDir: string, inputJson: Json, tiles: SROMTile[][][]) {
-		const { inputs, codeEmit } = inputJson as SromImagesJsonSpec;
+	getCROMSourceFiles(rootDir: string, inputJson: Json, tiles: CROMTile[][][]) {
+		const { inputs, codeEmit } = inputJson as CromImagesJsonSpec;
 
-		const finalTiles = denormalizeDupes(tiles, 'sromIndex');
+		const finalTiles = denormalizeDupes(tiles, 'cromIndex');
 
 		return (codeEmit ?? []).map<FileToWrite>((codeEmit) => {
 			const templatePath = path.resolve(rootDir, codeEmit.template);
@@ -51,4 +51,4 @@ const sromImages: ISROMGenerator = {
 	},
 };
 
-export { sromImages };
+export { cromImages };

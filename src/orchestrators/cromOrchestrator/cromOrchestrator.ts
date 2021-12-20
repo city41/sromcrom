@@ -12,11 +12,13 @@ import { emitCromBinaries } from './emitCromBinaries';
 
 import { eyecatcher } from '../../generators/eyecatcher';
 import { tilesets } from '../../generators/tilesets';
+import { cromImages } from '../../generators/cromImages';
 
 // create crom tile generators based on what is in the json file
 const generators: Record<string, ICROMGenerator> = {
 	eyecatcher,
 	tilesets,
+	cromImages,
 };
 const availableCROMGenerators = Object.keys(generators);
 

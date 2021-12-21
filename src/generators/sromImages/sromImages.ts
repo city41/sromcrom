@@ -20,7 +20,6 @@ type SromImagesJsonSpec = {
 type CodeEmitTile = {
 	index: number;
 	paletteIndex: number;
-	autoAnimation?: 4 | 8;
 };
 
 type CodeEmitImage = {

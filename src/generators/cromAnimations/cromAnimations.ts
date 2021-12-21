@@ -1,8 +1,12 @@
+import fs from 'fs';
 import path from 'path';
+import ejs from 'ejs';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { getCanvasContextFromImagePath } from '../../api/canvas';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
 import { CROMTile, ICROMGenerator } from '../../api/crom/types';
+import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
+import { CodeEmit, FileToWrite } from '../../types';
 
 type CromAnimation = {
 	name: string;
@@ -23,8 +27,101 @@ type CromAnimationInput = {
 };
 
 type CromAnimationInputJsonSpec = {
+	codeEmit?: CodeEmit[];
 	inputs: CromAnimationInput[];
 };
+
+type CodeEmitTile = {
+	index: number;
+	paletteIndex: number;
+	autoAnimation?: 4 | 8;
+};
+
+type CodeEmitAnimation = {
+	name: string;
+	imageFile: string;
+	autoAnimation?: 4 | 8;
+	frames: CodeEmitTile[][][];
+};
+
+type CodeEmitAnimationGroup = {
+	name: string;
+	animations: CodeEmitAnimation[];
+};
+
+function toCodeEmitTiles(inputTiles: CROMTile[][]): CodeEmitTile[][] {
+	return inputTiles.map((inputRow) => {
+		return inputRow.map((inputTile) => {
+			return {
+				index: inputTile.cromIndex!,
+				paletteIndex: inputTile.paletteIndex!,
+			};
+		});
+	});
+}
+
+function getNumberOfFrames(rootDir: string, animation: CromAnimation): number {
+	if (animation.autoAnimation) {
+		return animation.autoAnimation;
+	}
+
+	// TODO: figure out how to do this without dipping back into the canvas
+	const context = getCanvasContextFromImagePath(
+		path.resolve(rootDir, animation.imageFile)
+	);
+
+	return context.canvas.width / CROM_TILE_SIZE_PX / (animation.tileWidth ?? 1);
+}
+
+function toCodeEmitAnimations(
+	rootDir: string,
+	animations: CromAnimation[],
+	inputTiles: CROMTile[][][]
+): CodeEmitAnimation[] {
+	return animations.map((animation, i) => {
+		const numFrames = getNumberOfFrames(rootDir, animation);
+		const frames = inputTiles.splice(0, numFrames);
+		return {
+			name: animation.name,
+			imageFile: animation.imageFile,
+			autoAnimation: animation.autoAnimation,
+			frames: frames.map(toCodeEmitTiles),
+		};
+	});
+}
+
+function createAnimationDataForCodeEmit(
+	rootDir: string,
+	inputs: CromAnimationInput[],
+	tiles: CROMTile[][][]
+): CodeEmitAnimationGroup[] {
+	const finalTiles = denormalizeDupes(tiles, 'cromIndex');
+
+	let sliceIndex = 0;
+	return inputs.map((input, i) => {
+		const totalFrames = input.animations.reduce<number>(
+			(building, animation) => {
+				return building + getNumberOfFrames(rootDir, animation);
+			},
+			0
+		);
+
+		const animationSlice = finalTiles.slice(
+			sliceIndex,
+			sliceIndex + totalFrames
+		);
+		sliceIndex += animationSlice.length;
+
+		return {
+			name: input.name,
+			animations: toCodeEmitAnimations(
+				rootDir,
+				input.animations,
+				animationSlice
+			),
+		};
+	});
+}
 
 function sliceOutFrame(
 	tiles: CROMTile[][],
@@ -98,41 +195,28 @@ const cromAnimations: ICROMGenerator = {
 
 		return inputAnimations.flat(1);
 	},
-	// getCROMSources(rootDir, inputJson) {
-	// 	const { inputs } = inputJson as CromAnimationInputJsonSpec;
 
-	// 	const sourcesPerInput = (inputs ?? []).map<CROMTileSource[][][]>(
-	// 		(input) => {
-	// 			return input.animations.map((animation) => {
-	// 				const context = getCanvasContextFromImagePath(
-	// 					path.resolve(rootDir, animation.imageFile)
-	// 				);
+	getCROMSourceFiles(rootDir, inputJson, tiles: CROMTile[][][]) {
+		const { inputs, codeEmit } = inputJson as CromAnimationInputJsonSpec;
 
-	// 				const allTiles = extractCromTileSources(context);
+		const animationGroups = createAnimationDataForCodeEmit(
+			rootDir,
+			inputs,
+			tiles
+		);
 
-	// 				const frames = [];
+		return (codeEmit ?? []).map<FileToWrite>((codeEmit) => {
+			const templatePath = path.resolve(rootDir, codeEmit.template);
+			const template = fs.readFileSync(templatePath).toString();
 
-	// 				const imageWidthInTiles = context.canvas.width / CROM_TILE_SIZE_PX;
-	// 				for (
-	// 					let x = 0;
-	// 					x < imageWidthInTiles;
-	// 					x += animation.tileWidth ?? 1
-	// 				) {
-	// 					frames.push(allTiles.slice(x, x + (animation.tileWidth ?? 1)));
-	// 				}
+			const code = ejs.render(template, { animationGroups });
 
-	//                 if (animation.autoAnimation) {
-	//                     return {
-	//                         source: frames[0],
-
-	// 			});
-	// 		}
-	// 	);
-
-	// 	return sourcesPerInput.flat(1);
-	// },
-
-	// getCROMSourceFiles(rootDir, inputJson, tiles: CROMTile[][][]) {},
+			return {
+				path: path.resolve(rootDir, codeEmit.dest),
+				contents: Buffer.from(code),
+			};
+		});
+	},
 };
 
 export { cromAnimations };

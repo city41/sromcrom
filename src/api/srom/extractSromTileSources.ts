@@ -1,25 +1,25 @@
 import { NodeCanvasRenderingContext2D } from 'canvas';
 import { extractSubCanvas } from '../canvas/canvas';
 import { SROM_TILE_SIZE_PX } from './constants';
-import type { SROMTileSource } from './types';
+import type { SROMTile } from './types';
 
 export function extractSromTileSources(
 	context: NodeCanvasRenderingContext2D
-): SROMTileSource[][] {
-	const result: SROMTileSource[][] = [];
+): SROMTile[][] {
+	const result: SROMTile[][] = [];
 
 	for (let y = 0; y < context.canvas.height; y += SROM_TILE_SIZE_PX) {
-		const row: SROMTileSource[] = [];
+		const row: SROMTile[] = [];
 
 		for (let x = 0; x < context.canvas.width; x += SROM_TILE_SIZE_PX) {
-			const source = extractSubCanvas(
+			const canvasSource = extractSubCanvas(
 				context,
 				x,
 				y,
 				SROM_TILE_SIZE_PX,
 				SROM_TILE_SIZE_PX
 			);
-			row.push({ source });
+			row.push({ canvasSource });
 		}
 
 		result.push(row);

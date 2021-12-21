@@ -2,7 +2,7 @@ import { Canvas } from 'canvas';
 import { convertTo16BitColor } from '../palette/convertTo16Bit';
 import { Color24Bit, Palette16Bit } from '../palette/types';
 import { SROM_TILE_SIZE_PX } from './constants';
-import { SROMTile, SROMTileSourceWithPalette } from './types';
+import { SROMTile } from './types';
 
 function getIndexedData(source: Canvas, palette: Palette16Bit): number[] {
 	const indexed: number[] = [];
@@ -85,13 +85,15 @@ function convertToSromFormat(indexedData: number[]): number[] {
 	return sRomData;
 }
 
-export function toSROMTile(source: SROMTileSourceWithPalette): SROMTile {
-	const indexedData = getIndexedData(source.source, source.palette);
+export function getSROMBinaryData(tile: SROMTile): SROMTile {
+	if (!tile.palette) {
+		throw new Error(
+			'getSROMBinaryData called with a tile that lacks a palette'
+		);
+	}
 
-	const sromBinaryData = convertToSromFormat(indexedData);
+	const indexedData = getIndexedData(tile.canvasSource, tile.palette);
+	tile.sromBinaryData = convertToSromFormat(indexedData);
 
-	return {
-		...source,
-		sromBinaryData,
-	};
+	return tile;
 }

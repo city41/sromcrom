@@ -1,26 +1,8 @@
-import { toCROMTile } from '../../api/crom/toCROMTile';
-import { CROMTile, CROMTileSourceWithPalette } from '../../api/crom/types';
-import { GeneratorWithCROMTiles, GeneratorWithSources } from './types';
+import { getCROMBinaryData } from '../../api/crom/getCROMBinaryData';
+import { CROMTile } from '../../api/crom/types';
 
-function createIndexedTiles(
-	sources: CROMTileSourceWithPalette[][][]
-): CROMTile[][][] {
-	return sources.map((sourceImage) => {
-		return sourceImage.map((sourceRow) => {
-			return sourceRow.map(toCROMTile);
-		});
-	});
-}
-
-function indexCroms(
-	generatorsWithSources: GeneratorWithSources[]
-): GeneratorWithCROMTiles[] {
-	return generatorsWithSources.map((generatorWithSources) => {
-		return {
-			generator: generatorWithSources.generator,
-			tiles: createIndexedTiles(generatorWithSources.sourcesWithPalettes),
-		};
-	});
+function indexCroms(allTiles: CROMTile[]) {
+	allTiles.forEach(getCROMBinaryData);
 }
 
 export { indexCroms };

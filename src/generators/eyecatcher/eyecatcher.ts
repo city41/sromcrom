@@ -4,12 +4,8 @@ import { TRANSPARENT_24BIT_COLOR } from '../../api/palette/colors';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { getCanvasContextFromImagePath } from '../../api/canvas/canvas';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
-import type {
-	CROMTile,
-	CROMTileSource,
-	ICROMGenerator,
-} from '../../api/crom/types';
-import { ISROMGenerator, SROMTile, SROMTileSource } from '../../api/srom/types';
+import type { CROMTile, ICROMGenerator } from '../../api/crom/types';
+import { ISROMGenerator, SROMTile } from '../../api/srom/types';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
 import { SROM_TILE_SIZE_PX } from '../../api/srom/constants';
 import { Json } from '../../types';
@@ -103,10 +99,7 @@ const COMPANY_LOGO_TILE_POSITIONS = [
 
 const COPYRIGHT_TILE_POSITIONS = [[0x7b]];
 
-function getSROMSource(
-	imagePath: string,
-	expectedSize: Size
-): SROMTileSource[][] {
+function getSROMSource(imagePath: string, expectedSize: Size): SROMTile[][] {
 	const context = getCanvasContextFromImagePath(imagePath);
 	const { width, height } = context.canvas;
 
@@ -141,15 +134,15 @@ function widenMainImageByOneTile(
 	return destContext;
 }
 
-function isTileForFFBlank(sromTileSources: SROMTileSource[][]): boolean {
+function isTileForFFBlank(sromTileSources: SROMTile[][]): boolean {
 	const tile = sromTileSources[0][4];
 
-	const context = tile.source.getContext('2d');
+	const context = tile.canvasSource.getContext('2d');
 	const imageData = context.getImageData(
 		0,
 		0,
-		tile.source.width,
-		tile.source.height
+		tile.canvasSource.width,
+		tile.canvasSource.height
 	);
 
 	for (let p = 0; p < imageData.data.length; p += 4) {
@@ -166,7 +159,7 @@ function isTileForFFBlank(sromTileSources: SROMTileSource[][]): boolean {
 const eyecatcher: ICROMGenerator & ISROMGenerator = {
 	jsonKey: 'eyecatcher',
 
-	getCROMSources(rootDir: string, jsonSpec: Json): CROMTileSource[][][] {
+	getCROMSources(rootDir: string, jsonSpec: Json): CROMTile[][][] {
 		const { mainLogoImageFile } = jsonSpec as EyeCatcherJSONSpec;
 
 		const cRomImagePath = path.resolve(rootDir, mainLogoImageFile);
@@ -200,7 +193,7 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 			copyrightCharacter,
 		} = jsonSpec as EyeCatcherJSONSpec;
 
-		const sources: SROMTileSource[][][] = [];
+		const sources: SROMTile[][][] = [];
 
 		if (max330MegaImageFile) {
 			sources.push(

@@ -34,7 +34,7 @@ function toCodeEmitTiles(inputTiles: CROMTile[][]): CodeEmitTile[][] {
 		return inputRow.map((inputTile) => {
 			return {
 				index: inputTile.cromIndex!,
-				paletteIndex: inputTile.paletteIndex,
+				paletteIndex: inputTile.paletteIndex!,
 			};
 		});
 	});

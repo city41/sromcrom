@@ -3,7 +3,6 @@ import path from 'path';
 import { Palette16Bit } from '../../api/palette/types';
 import { ISROMGenerator, SROMTile } from '../../api/srom/types';
 import { determinePalettes } from '../common/determinePalettes';
-import { SROMTileSourceResult } from './types';
 import { FileToWrite, Json } from '../../types';
 import { indexSroms } from './indexSroms';
 import { markSromDupes } from './markSromDupes';
@@ -12,6 +11,7 @@ import { emitSromBinary } from './emitSromBinary';
 import { eyecatcher } from '../../generators/eyecatcher';
 import { sromImages } from '../../generators/sromImages';
 import { ffBlankGenerator } from './ffBlankGenerator';
+import { GeneratorWithSROMTiles } from './types';
 
 const generators: Record<string, ISROMGenerator> = {
 	eyecatcher,
@@ -42,35 +42,30 @@ function orchestrate(
 		sromGenerators.push(ffBlankGenerator);
 	}
 
-	const sromSourcesResult = sromGenerators.reduce<SROMTileSourceResult[]>(
+	const sromSourcesResult = sromGenerators.reduce<GeneratorWithSROMTiles[]>(
 		(building, generator) => {
-			const sources = generator.getSROMSources(
+			const tiles = generator.getSROMSources(
 				rootDir,
 				resourceJson[generator.jsonKey] as Json
 			);
 
 			return building.concat({
-				sources,
+				tiles,
 				generator,
 			});
 		},
 		[]
 	);
 
-	const sromSourcesWithPalettes = determinePalettes(
-		sromSourcesResult,
-		palettesStartingIndex
-	);
+	const allTiles = sromSourcesResult.reduce<SROMTile[]>((building, input) => {
+		return building.concat(input.tiles.flat(2));
+	}, []);
+
+	const finalPalettes = determinePalettes(allTiles, palettesStartingIndex);
 
 	// convert the 24bit rgb source canvases into actual SROM Tiles with indexed data
 	// making sure to keep associating a tile with the generator that initially provided it
-	const indexedSromResults = indexSroms(
-		sromSourcesWithPalettes.generatorResults
-	);
-
-	const allTiles = indexedSromResults.reduce<SROMTile[]>((building, input) => {
-		return building.concat(input.tiles.flat(2));
-	}, []);
+	indexSroms(allTiles);
 
 	// mark crom dupes, again keeping tiles associated with their generator
 	// this is done by mutating the croms in place, so no return needed
@@ -80,7 +75,7 @@ function orchestrate(
 	// croms that must be at a certain location (primarily the eyecatcher) and auto animations
 	// that must be positioned on a multiple of 4 or 8
 	// again done with an in place mutation
-	positionSroms(rootDir, resourceJson, indexedSromResults);
+	positionSroms(rootDir, resourceJson, sromSourcesResult);
 
 	const sromBinaryData = emitSromBinary(allTiles);
 	const sromFileToWrite: FileToWrite = {
@@ -88,7 +83,7 @@ function orchestrate(
 		contents: Buffer.from(new Uint8Array(sromBinaryData)),
 	};
 
-	const otherFilesToWrite = indexedSromResults.reduce<FileToWrite[]>(
+	const otherFilesToWrite = sromSourcesResult.reduce<FileToWrite[]>(
 		(building, sromResult) => {
 			if (sromResult.generator.getSROMSourceFiles) {
 				return building.concat(
@@ -106,7 +101,7 @@ function orchestrate(
 	);
 
 	return {
-		palettes: sromSourcesWithPalettes.finalPalettes,
+		palettes: finalPalettes,
 		filesToWrite: [sromFileToWrite].concat(otherFilesToWrite),
 	};
 }

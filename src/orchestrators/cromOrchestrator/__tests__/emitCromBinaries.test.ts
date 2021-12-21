@@ -3,13 +3,13 @@ import { CROM_TILE_HALF_SIZE_BYTES } from '../../../api/crom/constants';
 import { CROMTile } from '../../../api/crom/types';
 import { emitCromBinaries } from '../emitCromBinaries';
 
-describe('emitSromBinary', function () {
+describe('emitCromBinaries', function () {
 	it('should not pad the crom data', function () {
 		const tiles: CROMTile[] = [
 			{
 				palette: [0],
 				paletteIndex: 0,
-				source: createCanvas(1, 1),
+				canvasSource: createCanvas(1, 1),
 				cromBinaryData: {
 					cOddData: new Array(CROM_TILE_HALF_SIZE_BYTES).fill(0),
 					cEvenData: new Array(CROM_TILE_HALF_SIZE_BYTES).fill(0),
@@ -28,7 +28,7 @@ describe('emitSromBinary', function () {
 			{
 				palette: [0],
 				paletteIndex: 0,
-				source: createCanvas(1, 1),
+				canvasSource: createCanvas(1, 1),
 				cromBinaryData: {
 					cOddData: new Array(CROM_TILE_HALF_SIZE_BYTES).fill(0),
 					cEvenData: new Array(CROM_TILE_HALF_SIZE_BYTES).fill(0),
@@ -38,7 +38,7 @@ describe('emitSromBinary', function () {
 			{
 				palette: [0],
 				paletteIndex: 0,
-				source: createCanvas(1, 1),
+				canvasSource: createCanvas(1, 1),
 				cromBinaryData: {
 					cOddData: new Array(CROM_TILE_HALF_SIZE_BYTES).fill(0),
 					cEvenData: new Array(CROM_TILE_HALF_SIZE_BYTES).fill(0),
@@ -47,7 +47,7 @@ describe('emitSromBinary', function () {
 			{
 				palette: [0],
 				paletteIndex: 0,
-				source: createCanvas(1, 1),
+				canvasSource: createCanvas(1, 1),
 				cromBinaryData: {
 					cOddData: new Array(CROM_TILE_HALF_SIZE_BYTES).fill(1),
 					cEvenData: new Array(CROM_TILE_HALF_SIZE_BYTES).fill(1),
@@ -59,13 +59,15 @@ describe('emitSromBinary', function () {
 		const cromData = emitCromBinaries(tiles);
 
 		expect(cromData.cEvenData).toEqual(
-			tiles[0].cromBinaryData.cEvenData.concat(
-				tiles[2].cromBinaryData.cEvenData
+			tiles[0].cromBinaryData!.cEvenData.concat(
+				tiles[2].cromBinaryData!.cEvenData
 			)
 		);
 
 		expect(cromData.cOddData).toEqual(
-			tiles[0].cromBinaryData.cOddData.concat(tiles[2].cromBinaryData.cOddData)
+			tiles[0].cromBinaryData!.cOddData.concat(
+				tiles[2].cromBinaryData!.cOddData
+			)
 		);
 	});
 });

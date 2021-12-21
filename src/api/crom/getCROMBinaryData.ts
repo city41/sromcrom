@@ -1,7 +1,7 @@
 import { NodeCanvasRenderingContext2D } from 'canvas';
 import { convertTo16BitColor } from '../palette/convertTo16Bit';
 import { Color24Bit, Palette16Bit } from '../palette/types';
-import { CROMTile, CROMTileSourceWithPalette } from './types';
+import { CROMTile } from './types';
 
 function separateIntoCorners(
 	imgContext: NodeCanvasRenderingContext2D
@@ -82,20 +82,20 @@ function getBytesForIndexedCorners(
 	}, []);
 }
 
-export function toCROMTile(source: CROMTileSourceWithPalette): CROMTile {
-	const corners = separateIntoCorners(source.source.getContext('2d'));
+export function getCROMBinaryData(tile: CROMTile): CROMTile {
+	if (!tile.palette) {
+		throw new Error('toCROMTile: called with a tile that lacks a palette');
+	}
+
+	const corners = separateIntoCorners(tile.canvasSource.getContext('2d'));
 	const indexedCorners = corners.map((corner) => {
-		return convertToIndexed(corner, source.palette);
+		return convertToIndexed(corner, tile.palette!);
 	});
 
 	const cOddData = getBytesForIndexedCorners(indexedCorners, 0);
 	const cEvenData = getBytesForIndexedCorners(indexedCorners, 2);
 
-	return {
-		...source,
-		cromBinaryData: {
-			cOddData,
-			cEvenData,
-		},
-	};
+	tile.cromBinaryData = { cOddData, cEvenData };
+
+	return tile;
 }

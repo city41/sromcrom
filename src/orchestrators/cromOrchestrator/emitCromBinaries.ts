@@ -40,15 +40,15 @@ function emitCromBinaries(sourceTiles: CROMTile[]) {
 			++curIndex;
 		}
 
-		cEvenData.push(...tile.cromBinaryData.cEvenData);
-		cOddData.push(...tile.cromBinaryData.cOddData);
+		cEvenData.push(...tile.cromBinaryData!.cEvenData);
+		cOddData.push(...tile.cromBinaryData!.cOddData);
 
 		const childFrames = tile.childAnimationFrames;
 
 		if (childFrames) {
 			for (let c = 0; c < childFrames.length; ++c) {
-				cEvenData.push(...childFrames[c].cromBinaryData.cEvenData);
-				cOddData.push(...childFrames[c].cromBinaryData.cOddData);
+				cEvenData.push(...childFrames[c].cromBinaryData!.cEvenData);
+				cOddData.push(...childFrames[c].cromBinaryData!.cOddData);
 				++curIndex;
 			}
 		}

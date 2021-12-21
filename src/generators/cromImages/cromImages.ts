@@ -3,7 +3,7 @@ import path from 'path';
 import ejs from 'ejs';
 import { getCanvasContextFromImagePath } from '../../api/canvas';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
-import { ICROMGenerator, CROMTile, CROMTileSource } from '../../api/crom/types';
+import { ICROMGenerator, CROMTile } from '../../api/crom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { CodeEmit, FileToWrite, Json } from '../../types';
 
@@ -34,7 +34,7 @@ function toCodeEmitTiles(inputTiles: CROMTile[][]): CodeEmitTile[][] {
 		return inputRow.map((inputTile) => {
 			return {
 				index: inputTile.cromIndex!,
-				paletteIndex: inputTile.paletteIndex,
+				paletteIndex: inputTile.paletteIndex!,
 			};
 		});
 	});
@@ -57,7 +57,7 @@ function createImageDataForCodeEmit(
 const cromImages: ICROMGenerator = {
 	jsonKey: 'cromImages',
 
-	getCROMSources(rootDir: string, inputJson: Json): CROMTileSource[][][] {
+	getCROMSources(rootDir: string, inputJson: Json): CROMTile[][][] {
 		const { inputs } = inputJson as CromImagesJsonSpec;
 
 		return inputs.map((input) => {

@@ -34,7 +34,7 @@ const ffBlankGenerator: ISROMGenerator = {
 			[
 				[
 					{
-						source: BLANK_TILE_CANVAS,
+						canvasSource: BLANK_TILE_CANVAS,
 					},
 				],
 			],

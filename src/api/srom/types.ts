@@ -2,28 +2,24 @@ import { Canvas } from 'canvas';
 import { FileToWrite, Json } from '../../types';
 import { Palette16Bit } from '../palette/types';
 
-export type SROMTileSource = {
+export type SROMTile = {
 	/**
 	 * the modern png/aseprite source for this tile,
 	 */
-	source: Canvas;
-};
+	canvasSource: Canvas;
 
-export type SROMTileSourceWithPalette = SROMTileSource & {
 	/**
 	 * The sixteen bit palette that got assigned to this source.
 	 * The source will use this to figure out how to convert into
 	 * the indexed format
 	 */
-	palette: Palette16Bit;
+	palette?: Palette16Bit;
 
 	/**
 	 * Which palette this is in the final 16bit palette array output
 	 */
-	paletteIndex: number;
-};
+	paletteIndex?: number;
 
-export type SROMTile = SROMTileSourceWithPalette & {
 	/**
 	 * If this tile is a duplicate of another, then
 	 * this points to the other tile it duplicates
@@ -34,7 +30,7 @@ export type SROMTile = SROMTileSourceWithPalette & {
 	 * The data to place in the srom binary, each number
 	 * will be from 0 to 15
 	 */
-	sromBinaryData: number[];
+	sromBinaryData?: number[];
 
 	/**
 	 * The position in the srom binary for this tile
@@ -47,7 +43,7 @@ export type SROMTile = SROMTileSourceWithPalette & {
 export type ISROMGenerator = {
 	jsonKey: string;
 
-	getSROMSources: (rootDir: string, jsonSpec: Json) => SROMTileSource[][][];
+	getSROMSources: (rootDir: string, jsonSpec: Json) => SROMTile[][][];
 
 	setSROMPositions?: (
 		rootDir: string,

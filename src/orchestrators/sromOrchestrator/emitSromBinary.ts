@@ -42,7 +42,7 @@ function emitSromBinary(sourceTiles: SROMTile[]) {
 			++curIndex;
 		}
 
-		sData.push(...tile.sromBinaryData);
+		sData.push(...tile.sromBinaryData!);
 
 		++curIndex;
 	}

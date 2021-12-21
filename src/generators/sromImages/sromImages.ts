@@ -3,7 +3,7 @@ import path from 'path';
 import ejs from 'ejs';
 import { getCanvasContextFromImagePath } from '../../api/canvas';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
-import { ISROMGenerator, SROMTile, SROMTileSource } from '../../api/srom/types';
+import { ISROMGenerator, SROMTile } from '../../api/srom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { CodeEmit, FileToWrite, Json } from '../../types';
 
@@ -34,7 +34,7 @@ function toCodeEmitTiles(inputTiles: SROMTile[][]): CodeEmitTile[][] {
 		return inputRow.map((inputTile) => {
 			return {
 				index: inputTile.sromIndex!,
-				paletteIndex: inputTile.paletteIndex,
+				paletteIndex: inputTile.paletteIndex!,
 			};
 		});
 	});
@@ -57,7 +57,7 @@ function createImageDataForCodeEmit(
 const sromImages: ISROMGenerator = {
 	jsonKey: 'sromImages',
 
-	getSROMSources(rootDir: string, inputJson: Json): SROMTileSource[][][] {
+	getSROMSources(rootDir: string, inputJson: Json): SROMTile[][][] {
 		const { inputs } = inputJson as SromImagesJsonSpec;
 
 		return inputs.map((input) => {

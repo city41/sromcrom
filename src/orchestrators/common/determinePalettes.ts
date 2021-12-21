@@ -4,48 +4,18 @@ import { BLACK16, TRANSPARENT_16BIT_COLOR } from '../../api/palette/colors';
 import { get24BitPalette } from '../../api/palette/get24BitPalette';
 import { convertTo16BitPalette } from '../../api/palette/convertTo16Bit';
 import uniq from 'lodash/uniq';
-import isEqual from 'lodash/isEqual';
 
-// all of the generics in here are so this file can support either crom's or srom's
-// T is either a CROM source or an SROM source, of which we just need the canvas that is
-// the tile in modern format (such as png)
-//
-// G is the generator type, it's a black box throughout this file
-
-type BaseTileSource = {
-	source: Canvas;
-};
-
-type BaseResult<T extends BaseTileSource, G> = {
-	sources: T[][][];
-	generator: G;
-};
-
-type BaseTileSourceResult<T extends BaseTileSource, G> = {
-	sources: T[][][];
-	generator: G;
-};
-
-type BaseTileSourceWithPalette<T extends BaseTileSource> = T & {
-	palette: Palette16Bit;
-	paletteIndex: number;
-};
-
-type BaseGeneratorWithSources<T extends BaseTileSource, G> = {
-	generator: G;
-	sourcesWithPalettes: BaseTileSourceWithPalette<T>[][][];
-};
-
-type BaseTileSourceWithPalettesResult<T extends BaseTileSource, G> = {
-	generatorResults: BaseGeneratorWithSources<T, G>[];
-	finalPalettes: Palette16Bit[];
+type BaseTile = {
+	canvasSource: Canvas;
+	palette?: Palette16Bit;
+	paletteIndex?: number;
 };
 
 // a string in the form i-i-i-... where i is a 16 bit packed color
 // way too complex and tedious to model as a template literal
 type PaletteString = string;
 
-type PaletteMap<T> = Map<Palette16Bit, T[]>;
+type PaletteMap = Map<Palette16Bit, BaseTile[]>;
 
 function sortPalette(palette: Palette16Bit): Palette16Bit {
 	const cloned = [...palette];
@@ -65,33 +35,31 @@ function sortPalette(palette: Palette16Bit): Palette16Bit {
 	return uniq(cloned) as Palette16Bit;
 }
 
-function buildPaletteMap<T extends BaseTileSource>(
-	sources: T[]
-): PaletteMap<T> {
+function buildPaletteMap(tiles: BaseTile[]): PaletteMap {
 	const intermediateMap = new Map<
 		PaletteString,
-		{ palette: Palette16Bit; sources: T[] }
+		{ palette: Palette16Bit; tiles: BaseTile[] }
 	>();
 
-	sources.forEach((source) => {
-		const palette24 = get24BitPalette(source.source);
+	tiles.forEach((tile) => {
+		const palette24 = get24BitPalette(tile.canvasSource);
 		const palette16 = sortPalette(convertTo16BitPalette(palette24));
 
 		const paletteString = palette16.join('-');
 
 		if (intermediateMap.has(paletteString)) {
-			intermediateMap.get(paletteString)!.sources.push(source);
+			intermediateMap.get(paletteString)!.tiles.push(tile);
 		} else {
 			intermediateMap.set(paletteString, {
 				palette: palette16,
-				sources: [source],
+				tiles: [tile],
 			});
 		}
 	});
 
-	const result: PaletteMap<T> = new Map() as PaletteMap<T>;
+	const result: PaletteMap = new Map() as PaletteMap;
 	Array.from(intermediateMap.values()).forEach((intermediateValue) => {
-		result.set(intermediateValue.palette, intermediateValue.sources);
+		result.set(intermediateValue.palette, intermediateValue.tiles);
 	});
 
 	return result;
@@ -105,10 +73,8 @@ function mergeTwoPalettes(pa: Palette16Bit, pb: Palette16Bit): Palette16Bit {
 	return finalMerged;
 }
 
-function mergePalettes<T extends BaseTileSource>(
-	inputPaletteMap: PaletteMap<T>
-): PaletteMap<T> {
-	const result: PaletteMap<T> = new Map() as PaletteMap<T>;
+function mergePalettes(inputPaletteMap: PaletteMap): PaletteMap {
+	const result: PaletteMap = new Map() as PaletteMap;
 
 	const allPalettes = Array.from(inputPaletteMap.keys());
 
@@ -153,34 +119,22 @@ function padTo16Values(palette: Palette16Bit): Palette16Bit {
 	return newPalette as Palette16Bit;
 }
 
-function findPalette<T extends BaseTileSource>(
-	source: T,
-	paletteMap: PaletteMap<T>
-): Palette16Bit {
+function findPalette(tile: BaseTile, paletteMap: PaletteMap): Palette16Bit {
 	const entry = Array.from(paletteMap.entries()).find((e) => {
-		return e[1].includes(source);
+		return e[1].includes(tile);
 	});
 
 	return entry![0];
 }
 
-function assignPalettesForGenerators<TTileSource extends BaseTileSource, G>(
-	sourceResults: BaseResult<TTileSource, G>[],
-	allSources: TTileSource[],
-	paletteMap: PaletteMap<TTileSource>,
+function assignPalettes(
+	allTiles: BaseTile[],
+	paletteMap: PaletteMap,
 	finalPalettes: Palette16Bit[],
 	paletteStartIndex: number
-): Array<{
-	sourcesWithPalettes: BaseTileSourceWithPalette<TTileSource>[][][];
-	generator: G;
-}> {
-	const sourceToSourceWithPalette = new Map<
-		TTileSource,
-		BaseTileSourceWithPalette<TTileSource>
-	>();
-
-	allSources.forEach((source) => {
-		const palette = findPalette(source, paletteMap);
+) {
+	allTiles.forEach((tile) => {
+		const palette = findPalette(tile, paletteMap);
 		const paletteIndex = finalPalettes.indexOf(palette);
 
 		if (paletteIndex < 0) {
@@ -189,58 +143,19 @@ function assignPalettesForGenerators<TTileSource extends BaseTileSource, G>(
 			);
 		}
 
-		const sourceWithPalette = {
-			...source,
-			palette,
-			paletteIndex: finalPalettes.indexOf(palette) + paletteStartIndex,
-		};
-		sourceToSourceWithPalette.set(source, sourceWithPalette);
-	});
-
-	return sourceResults.map((cromSourceResult) => {
-		const sourcesWithPalettes = cromSourceResult.sources.map((sourceImage) => {
-			return sourceImage.map((sourceRow) => {
-				return sourceRow.map((source) => {
-					return sourceToSourceWithPalette.get(source)!;
-				});
-			});
-		});
-
-		return {
-			generator: cromSourceResult.generator,
-			sourcesWithPalettes,
-		};
+		tile.palette = palette;
+		tile.paletteIndex = finalPalettes.indexOf(palette) + paletteStartIndex;
 	});
 }
 
-function determinePalettes<TTileSource extends BaseTileSource, G>(
-	sourceResults: BaseTileSourceResult<TTileSource, G>[],
+function determinePalettes<TTile extends BaseTile, G>(
+	allTiles: TTile[],
 	paletteStartIndex: number
-): BaseTileSourceWithPalettesResult<TTileSource, G> {
-	// we need to associate a CROMTileSource to its generator, so first build
-	// a map that lets us do that
-	const sourceToResult = new Map<
-		TTileSource,
-		BaseTileSourceResult<TTileSource, G>
-	>();
-
-	// extract all crom sources out into a single dimension array, which is the input
-	// for figuring out our palettes
-	const allSources: TTileSource[] = [];
-
-	sourceResults.forEach((sourceResult) => {
-		const sources = sourceResult.sources.flat(2);
-		sources.forEach((source) => {
-			sourceToResult.set(source, sourceResult);
-		});
-
-		allSources.push(...sources);
-	});
-
+): Palette16Bit[] {
 	// convert the 1d array of sources into a palette map,
 	// which maps from a 16 bit palette to all of the sources
 	// that can use it
-	const paletteMap = buildPaletteMap(allSources);
+	const paletteMap = buildPaletteMap(allTiles);
 
 	// it is likely palettes can get merged. say two sources each only have
 	// 8 colors in them, then we can merge those 8 colors into one palette,
@@ -254,18 +169,14 @@ function determinePalettes<TTileSource extends BaseTileSource, G>(
 
 	// for each generator, convert their sources into sources-with-palettes
 	// later these sources-with-palettes will be used to build the actual CROM data
-	const generatorResults = assignPalettesForGenerators(
-		sourceResults,
-		allSources,
+	assignPalettes(
+		allTiles,
 		mergedPaletteMap,
 		finalPalettesNotYetPadded,
 		paletteStartIndex
 	);
 
-	return {
-		generatorResults,
-		finalPalettes: finalPalettesNotYetPadded.map(padTo16Values),
-	};
+	return finalPalettesNotYetPadded.map(padTo16Values);
 }
 
 export { determinePalettes };

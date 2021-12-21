@@ -13,12 +13,7 @@ type CromAnimation = {
 	imageFile: string;
 	tileWidth?: number;
 	autoAnimation?: 4 | 8;
-	// TODO: are these needed in sromcrom?
-	// should sromcrom allow passing through a generic property bag?
-	offsetX: number;
-	offsetY: number;
-	loop: boolean;
-	durations?: number | number[];
+	[key: string]: unknown;
 };
 
 type CromAnimationInput = {
@@ -42,6 +37,7 @@ type CodeEmitAnimation = {
 	imageFile: string;
 	autoAnimation?: 4 | 8;
 	frames: CodeEmitTile[][][];
+	custom: Record<string, unknown>;
 };
 
 type CodeEmitAnimationGroup = {
@@ -73,6 +69,13 @@ function getNumberOfFrames(rootDir: string, animation: CromAnimation): number {
 	return context.canvas.width / CROM_TILE_SIZE_PX / (animation.tileWidth ?? 1);
 }
 
+function getCustomPropObject(
+	animation: CromAnimation
+): Record<string, unknown> {
+	const { name, imageFile, tileWidth, autoAnimation, ...custom } = animation;
+	return custom;
+}
+
 function toCodeEmitAnimations(
 	rootDir: string,
 	animations: CromAnimation[],
@@ -81,11 +84,13 @@ function toCodeEmitAnimations(
 	return animations.map((animation, i) => {
 		const numFrames = getNumberOfFrames(rootDir, animation);
 		const frames = inputTiles.splice(0, numFrames);
+
 		return {
 			name: animation.name,
 			imageFile: animation.imageFile,
 			autoAnimation: animation.autoAnimation,
 			frames: frames.map(toCodeEmitTiles),
+			custom: getCustomPropObject(animation),
 		};
 	});
 }

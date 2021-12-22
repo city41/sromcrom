@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import ejs from 'ejs';
-import { getCanvasContextFromImagePath } from '../../api/canvas';
+import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
-import { ISROMGenerator, SROMTile } from '../../api/srom/types';
+import { ISROMGenerator, SROMTile, SROMTileMatrix } from '../../api/srom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { CodeEmit, FileToWrite, Json } from '../../types';
 
@@ -22,15 +22,22 @@ type CodeEmitTile = {
 	paletteIndex: number;
 };
 
+type CodeEmitTileMatrixRow = Array<CodeEmitTile | null>;
+type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
+
 type CodeEmitImage = {
 	name: string;
 	imageFile: string;
-	tiles: CodeEmitTile[][];
+	tiles: CodeEmitTileMatrix;
 };
 
-function toCodeEmitTiles(inputTiles: SROMTile[][]): CodeEmitTile[][] {
+function toCodeEmitTiles(inputTiles: SROMTileMatrix): CodeEmitTileMatrix {
 	return inputTiles.map((inputRow) => {
 		return inputRow.map((inputTile) => {
+			if (inputTile === null) {
+				return null;
+			}
+
 			return {
 				index: inputTile.sromIndex!,
 				paletteIndex: inputTile.paletteIndex!,
@@ -41,7 +48,7 @@ function toCodeEmitTiles(inputTiles: SROMTile[][]): CodeEmitTile[][] {
 
 function createImageDataForCodeEmit(
 	inputs: SromImageInput[],
-	tiles: SROMTile[][][]
+	tiles: SROMTileMatrix[]
 ): CodeEmitImage[] {
 	const finalTiles = denormalizeDupes(tiles, 'sromIndex');
 
@@ -56,7 +63,7 @@ function createImageDataForCodeEmit(
 const sromImages: ISROMGenerator = {
 	jsonKey: 'sromImages',
 
-	getSROMSources(rootDir: string, inputJson: Json): SROMTile[][][] {
+	getSROMSources(rootDir, inputJson) {
 		const { inputs } = inputJson as SromImagesJsonSpec;
 
 		return inputs.map((input) => {
@@ -68,7 +75,7 @@ const sromImages: ISROMGenerator = {
 		});
 	},
 
-	getSROMSourceFiles(rootDir: string, inputJson: Json, tiles: SROMTile[][][]) {
+	getSROMSourceFiles(rootDir, inputJson, tiles) {
 		const { inputs, codeEmit } = inputJson as SromImagesJsonSpec;
 
 		const images = createImageDataForCodeEmit(inputs, tiles);

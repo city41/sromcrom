@@ -2,10 +2,10 @@ import path from 'path';
 import { createCanvas, NodeCanvasRenderingContext2D } from 'canvas';
 import { TRANSPARENT_24BIT_COLOR } from '../../api/palette/colors';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
-import { getCanvasContextFromImagePath } from '../../api/canvas/canvas';
+import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
 import type { CROMTile, ICROMGenerator } from '../../api/crom/types';
-import { ISROMGenerator, SROMTile } from '../../api/srom/types';
+import { ISROMGenerator, SROMTile, SROMTileMatrix } from '../../api/srom/types';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
 import { SROM_TILE_SIZE_PX } from '../../api/srom/constants';
 import { Json } from '../../types';
@@ -99,7 +99,16 @@ const COMPANY_LOGO_TILE_POSITIONS = [
 
 const COPYRIGHT_TILE_POSITIONS = [[0x7b]];
 
-function getSROMSource(imagePath: string, expectedSize: Size): SROMTile[][] {
+const EMPTY_IMAGE_ERROR_MESSAGE =
+	'eyecatcher images can not have any empty tiles. If the tile should be blank, fill it with magenta.';
+
+function hasEmpty<T extends SROMTile | CROMTile | null>(
+	matrix: T[][]
+): boolean {
+	return matrix.flat(3).some((t) => t === null);
+}
+
+function getSROMSource(imagePath: string, expectedSize: Size): SROMTileMatrix {
 	const context = getCanvasContextFromImagePath(imagePath);
 	const { width, height } = context.canvas;
 
@@ -107,6 +116,12 @@ function getSROMSource(imagePath: string, expectedSize: Size): SROMTile[][] {
 		throw new Error(
 			`eyecatcher image, ${imagePath}, is wrong size. Should be ${expectedSize.width}x${expectedSize.height}, but is ${width}x${height}`
 		);
+	}
+
+	const sromSource = extractSromTileSources(context);
+
+	if (hasEmpty(sromSource)) {
+		throw new Error(EMPTY_IMAGE_ERROR_MESSAGE);
 	}
 
 	return extractSromTileSources(context);
@@ -134,8 +149,12 @@ function widenMainImageByOneTile(
 	return destContext;
 }
 
-function isTileForFFBlank(sromTileSources: SROMTile[][]): boolean {
+function isTileForFFBlank(sromTileSources: SROMTileMatrix): boolean {
 	const tile = sromTileSources[0][4];
+
+	if (tile === null) {
+		return false;
+	}
 
 	const context = tile.canvasSource.getContext('2d');
 	const imageData = context.getImageData(
@@ -159,7 +178,7 @@ function isTileForFFBlank(sromTileSources: SROMTile[][]): boolean {
 const eyecatcher: ICROMGenerator & ISROMGenerator = {
 	jsonKey: 'eyecatcher',
 
-	getCROMSources(rootDir: string, jsonSpec: Json): CROMTile[][][] {
+	getCROMSources(rootDir, jsonSpec) {
 		const { mainLogoImageFile } = jsonSpec as EyeCatcherJSONSpec;
 
 		const cRomImagePath = path.resolve(rootDir, mainLogoImageFile);
@@ -182,10 +201,16 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 		// tiles wide, then appending a blank tile column to the end
 		const finalContext = widenMainImageByOneTile(context);
 
-		return [extractCromTileSources(finalContext)];
+		const cromTileSources = extractCromTileSources(finalContext);
+
+		if (hasEmpty(cromTileSources)) {
+			throw new Error(EMPTY_IMAGE_ERROR_MESSAGE);
+		}
+
+		return [cromTileSources];
 	},
 
-	getSROMSources(rootDir: string, jsonSpec: Json) {
+	getSROMSources(rootDir, jsonSpec) {
 		const {
 			max330MegaImageFile,
 			proGearSpecImageFile,
@@ -193,7 +218,7 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 			copyrightCharacter,
 		} = jsonSpec as EyeCatcherJSONSpec;
 
-		const sources: SROMTile[][][] = [];
+		const sources: SROMTileMatrix[] = [];
 
 		if (max330MegaImageFile) {
 			sources.push(
@@ -213,7 +238,7 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 
 			if (!isTileForFFBlank(proGearSource)) {
 				console.warn(
-					'proGearSpecImageFile: the tile that will be placed at 0xff in the SROM binary (at {64px,0px} in the image) is not blank. That tile will be drawn over the entire fix layer in many situations.'
+					'proGearSpecImageFile: the tile that will be placed at 0xff in the SROM binary (at {64px,0px} in the image) is not blank or is empty. That tile will be drawn over the entire fix layer in many situations. It should be an entirely magenta tile.'
 				);
 			}
 		}
@@ -239,7 +264,7 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 		return sources;
 	},
 
-	setCROMPositions(_rootDir: string, _json: Json, images: CROMTile[][][]) {
+	setCROMPositions(_rootDir, _json, images) {
 		let eyeCatcherIndex = 0;
 
 		const eyecatcherMainImage = images[0];
@@ -248,22 +273,22 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 			for (let x = 0; x < eyecatcherMainImage[y].length; ++x) {
 				if ((y === 0 || y === 3) && x === 14) {
 					// upper right corner or lower right corner, which should not be emitted
-					eyecatcherMainImage[y][x].duplicateOf = eyecatcherMainImage[0][0];
+					eyecatcherMainImage[y][x]!.duplicateOf = eyecatcherMainImage[0][0]!;
 				} else {
-					eyecatcherMainImage[y][x].cromIndex = eyeCatcherIndex++;
+					eyecatcherMainImage[y][x]!.cromIndex = eyeCatcherIndex++;
 
 					// ensure these tiles are totally static and not involved
 					// in any duplication or auto animations
 					// TODO: a better way to handle this
-					delete eyecatcherMainImage[y][x].duplicateOf;
-					delete eyecatcherMainImage[y][x].childOf;
-					delete eyecatcherMainImage[y][x].childAnimationFrames;
+					delete eyecatcherMainImage[y][x]!.duplicateOf;
+					delete eyecatcherMainImage[y][x]!.childOf;
+					delete eyecatcherMainImage[y][x]!.childAnimationFrames;
 				}
 			}
 		}
 	},
 
-	setSROMPositions(_rootDir: string, _json: Json, sromTiles: SROMTile[][][]) {
+	setSROMPositions(_rootDir, _json, sromTiles) {
 		// TODO: use the json to figure out which images are present
 
 		const max330Image = sromTiles.find((i) => {
@@ -274,7 +299,10 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 		});
 
 		if (max330Image) {
-			setSROMPositions(max330Image, MAX_330_MEGA_TILE_POSITIONS);
+			setSROMPositions(
+				max330Image as SROMTile[][],
+				MAX_330_MEGA_TILE_POSITIONS
+			);
 		}
 
 		const proGearImage = sromTiles.find((i) => {
@@ -285,7 +313,10 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 		});
 
 		if (proGearImage) {
-			setSROMPositions(proGearImage, PRO_GEAR_SPEC_TILE_POSITIONS);
+			setSROMPositions(
+				proGearImage as SROMTile[][],
+				PRO_GEAR_SPEC_TILE_POSITIONS
+			);
 		}
 
 		const companyImage = sromTiles.find((i) => {
@@ -296,7 +327,10 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 		});
 
 		if (companyImage) {
-			setSROMPositions(companyImage, COMPANY_LOGO_TILE_POSITIONS);
+			setSROMPositions(
+				companyImage as SROMTile[][],
+				COMPANY_LOGO_TILE_POSITIONS
+			);
 		}
 
 		const copyrightImage = sromTiles.find((i) => {
@@ -307,7 +341,10 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 		});
 
 		if (copyrightImage) {
-			setSROMPositions(copyrightImage, COPYRIGHT_TILE_POSITIONS);
+			setSROMPositions(
+				copyrightImage as SROMTile[][],
+				COPYRIGHT_TILE_POSITIONS
+			);
 		}
 	},
 };

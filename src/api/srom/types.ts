@@ -40,20 +40,23 @@ export type SROMTile = {
 	sromIndex?: number;
 };
 
+export type SROMTileMatrixRow = Array<SROMTile | null>;
+export type SROMTileMatrix = SROMTileMatrixRow[];
+
 export type ISROMGenerator = {
 	jsonKey: string;
 
-	getSROMSources: (rootDir: string, jsonSpec: Json) => SROMTile[][][];
+	getSROMSources: (rootDir: string, jsonSpec: Json) => SROMTileMatrix[];
 
 	setSROMPositions?: (
 		rootDir: string,
 		jsonSpec: Json,
-		sourceSROMs: SROMTile[][][]
+		sourceSROMs: SROMTileMatrix[]
 	) => void;
 
 	getSROMSourceFiles?: (
 		rootDir: string,
 		jsonSpec: Json,
-		sromTiles: SROMTile[][][]
+		sromTiles: SROMTileMatrix[]
 	) => FileToWrite[];
 };

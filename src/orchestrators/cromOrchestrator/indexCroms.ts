@@ -1,8 +1,8 @@
-import { getCROMBinaryData } from '../../api/crom/getCROMBinaryData';
+import { setCROMBinaryData } from '../../api/crom/setCROMBinaryData';
 import { CROMTile } from '../../api/crom/types';
 
 function indexCroms(allTiles: CROMTile[]) {
-	allTiles.forEach(getCROMBinaryData);
+	allTiles.forEach(setCROMBinaryData);
 }
 
 export { indexCroms };

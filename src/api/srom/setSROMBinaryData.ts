@@ -85,7 +85,7 @@ function convertToSromFormat(indexedData: number[]): number[] {
 	return sRomData;
 }
 
-export function getSROMBinaryData(tile: SROMTile): SROMTile {
+export function setSROMBinaryData(tile: SROMTile): SROMTile {
 	if (!tile.palette) {
 		throw new Error(
 			'getSROMBinaryData called with a tile that lacks a palette'

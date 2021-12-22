@@ -13,16 +13,19 @@ type DupableTile = {
 	duplicateOf?: DupableTile;
 };
 
+type MatrixRow<T extends DupableTile> = Array<T | null>;
+type Matrix<T extends DupableTile> = MatrixRow<T>[];
+
 export function denormalizeDupes<T extends DupableTile>(
-	tiles: T[][][],
+	tiles: Matrix<T>[],
 	indexProp: keyof T
-): T[][][] {
+): Matrix<T>[] {
 	const cloned = cloneDeep(tiles);
 
 	cloned.forEach((image) => {
 		image.forEach((row) => {
 			row.forEach((tile) => {
-				if (tile.duplicateOf) {
+				if (tile?.duplicateOf) {
 					tile[indexProp] = (tile.duplicateOf as T)[indexProp];
 				}
 			});

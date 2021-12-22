@@ -2,9 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import ejs from 'ejs';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
-import { getCanvasContextFromImagePath } from '../../api/canvas';
+import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
-import { CROMTile, ICROMGenerator } from '../../api/crom/types';
+import { CROMTile, CROMTileMatrix, ICROMGenerator } from '../../api/crom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { CodeEmit, FileToWrite } from '../../types';
 
@@ -32,11 +32,14 @@ type CodeEmitTile = {
 	autoAnimation?: 4 | 8;
 };
 
+type CodeEmitTileMatrixRow = Array<CodeEmitTile | null>;
+type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
+
 type CodeEmitAnimation = {
 	name: string;
 	imageFile: string;
 	autoAnimation?: 4 | 8;
-	frames: CodeEmitTile[][][];
+	frames: CodeEmitTileMatrix[];
 	custom: Record<string, unknown>;
 };
 
@@ -45,9 +48,13 @@ type CodeEmitAnimationGroup = {
 	animations: CodeEmitAnimation[];
 };
 
-function toCodeEmitTiles(inputTiles: CROMTile[][]): CodeEmitTile[][] {
+function toCodeEmitTiles(inputTiles: CROMTileMatrix): CodeEmitTileMatrix {
 	return inputTiles.map((inputRow) => {
 		return inputRow.map((inputTile) => {
+			if (inputTile === null) {
+				return null;
+			}
+
 			return {
 				index: inputTile.cromIndex!,
 				paletteIndex: inputTile.paletteIndex!,
@@ -79,7 +86,7 @@ function getCustomPropObject(
 function toCodeEmitAnimations(
 	rootDir: string,
 	animations: CromAnimation[],
-	inputTiles: CROMTile[][][]
+	inputTiles: CROMTileMatrix[]
 ): CodeEmitAnimation[] {
 	return animations.map((animation, i) => {
 		const numFrames = getNumberOfFrames(rootDir, animation);
@@ -98,7 +105,7 @@ function toCodeEmitAnimations(
 function createAnimationDataForCodeEmit(
 	rootDir: string,
 	inputs: CromAnimationInput[],
-	tiles: CROMTile[][][]
+	tiles: CROMTileMatrix[]
 ): CodeEmitAnimationGroup[] {
 	const finalTiles = denormalizeDupes(tiles, 'cromIndex');
 
@@ -129,11 +136,11 @@ function createAnimationDataForCodeEmit(
 }
 
 function sliceOutFrame(
-	tiles: CROMTile[][],
+	tiles: CROMTileMatrix,
 	startX: number,
 	endX: number
-): CROMTile[][] {
-	const rows: CROMTile[][] = [];
+): CROMTileMatrix {
+	const rows: CROMTileMatrix = [];
 
 	for (let y = 0; y < tiles.length; ++y) {
 		rows.push(tiles[y].slice(startX, endX));
@@ -165,43 +172,55 @@ const cromAnimations: ICROMGenerator = {
 		const { inputs } = inputJson as CromAnimationInputJsonSpec;
 
 		const inputAnimations = inputs.map((input) => {
-			return input.animations.reduce<CROMTile[][][]>((building, animation) => {
-				const context = getCanvasContextFromImagePath(
-					path.resolve(rootDir, animation.imageFile)
-				);
-
-				const allTiles = extractCromTileSources(context);
-
-				const frames: CROMTile[][][] = [];
-				const imageWidthTiles = context.canvas.width / CROM_TILE_SIZE_PX;
-
-				for (let x = 0; x < imageWidthTiles; x += animation.tileWidth ?? 1) {
-					const frame = sliceOutFrame(
-						allTiles,
-						x,
-						x + (animation.tileWidth ?? 1)
+			return input.animations.reduce<CROMTileMatrix[]>(
+				(building, animation) => {
+					const context = getCanvasContextFromImagePath(
+						path.resolve(rootDir, animation.imageFile)
 					);
-					frames.push(frame);
-				}
 
-				if (animation.autoAnimation) {
-					if (frames.length !== animation.autoAnimation) {
-						throw new Error(
-							`cromImages: ${animation.name} (${animation.imageFile}) is an auto animation of ${animation.autoAnimation} but has ${frames.length} frames`
+					const allTiles = extractCromTileSources(context);
+
+					const frames: CROMTileMatrix[] = [];
+					const imageWidthTiles = context.canvas.width / CROM_TILE_SIZE_PX;
+
+					for (let x = 0; x < imageWidthTiles; x += animation.tileWidth ?? 1) {
+						const frame = sliceOutFrame(
+							allTiles,
+							x,
+							x + (animation.tileWidth ?? 1)
+						);
+						frames.push(frame);
+					}
+
+					if (animation.autoAnimation) {
+						if (frames.length !== animation.autoAnimation) {
+							throw new Error(
+								`cromAnimations: ${animation.name} (${animation.imageFile}) is an auto animation of ${animation.autoAnimation} but has ${frames.length} frames`
+							);
+						}
+
+						if (frames.flat(3).some((f) => f === null)) {
+							throw new Error(
+								`cromAnimations: ${animation.name} (${animation.imageFile}) is an auto animation of ${animation.autoAnimation} but has blank frames. If a frame should be empty, use magenta instead of alpha=0`
+							);
+						}
+
+						applyChildTiles(
+							frames[0] as CROMTile[][],
+							frames.slice(1) as CROMTile[][][]
 						);
 					}
 
-					applyChildTiles(frames[0], frames.slice(1));
-				}
-
-				return building.concat(frames);
-			}, []);
+					return building.concat(frames);
+				},
+				[]
+			);
 		});
 
 		return inputAnimations.flat(1);
 	},
 
-	getCROMSourceFiles(rootDir, inputJson, tiles: CROMTile[][][]) {
+	getCROMSourceFiles(rootDir, inputJson, tiles) {
 		const { inputs, codeEmit } = inputJson as CromAnimationInputJsonSpec;
 
 		const animationGroups = createAnimationDataForCodeEmit(

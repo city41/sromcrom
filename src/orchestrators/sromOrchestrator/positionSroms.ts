@@ -30,7 +30,10 @@ function positionSroms(
 	});
 
 	const allTiles = inputs.reduce<SROMTile[]>((building, input) => {
-		return building.concat(input.tiles.flat(2));
+		const actualTiles = input.tiles
+			.flat(2)
+			.filter((t) => t !== null) as SROMTile[];
+		return building.concat(actualTiles);
 	}, []);
 
 	const sortedTiles = allTiles.sort(sortBySromIndex);

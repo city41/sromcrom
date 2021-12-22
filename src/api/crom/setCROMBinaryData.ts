@@ -82,7 +82,7 @@ function getBytesForIndexedCorners(
 	}, []);
 }
 
-export function getCROMBinaryData(tile: CROMTile): CROMTile {
+export function setCROMBinaryData(tile: CROMTile): CROMTile {
 	if (!tile.palette) {
 		throw new Error('toCROMTile: called with a tile that lacks a palette');
 	}

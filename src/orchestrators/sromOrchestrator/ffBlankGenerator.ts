@@ -41,7 +41,7 @@ const ffBlankGenerator: ISROMGenerator = {
 		];
 	},
 	setSROMPositions(_rootDir, _jsonSpec, sromTiles) {
-		sromTiles[0][0][0].sromIndex = 0xff;
+		sromTiles[0][0][0]!.sromIndex = 0xff;
 	},
 };
 

@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import ejs from 'ejs';
-import { getCanvasContextFromImagePath } from '../../api/canvas';
+import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
-import { ICROMGenerator, CROMTile } from '../../api/crom/types';
+import { ICROMGenerator, CROMTile, CROMTileMatrix } from '../../api/crom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { CodeEmit, FileToWrite, Json } from '../../types';
 
@@ -23,15 +23,22 @@ type CodeEmitTile = {
 	autoAnimation?: 4 | 8;
 };
 
+type CodeEmitTileMatrixRow = Array<CodeEmitTile | null>;
+type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
+
 type CodeEmitImage = {
 	name: string;
 	imageFile: string;
-	tiles: CodeEmitTile[][];
+	tiles: CodeEmitTileMatrix;
 };
 
-function toCodeEmitTiles(inputTiles: CROMTile[][]): CodeEmitTile[][] {
+function toCodeEmitTiles(inputTiles: CROMTileMatrix): CodeEmitTileMatrix {
 	return inputTiles.map((inputRow) => {
 		return inputRow.map((inputTile) => {
+			if (inputTile === null) {
+				return null;
+			}
+
 			return {
 				index: inputTile.cromIndex!,
 				paletteIndex: inputTile.paletteIndex!,
@@ -42,7 +49,7 @@ function toCodeEmitTiles(inputTiles: CROMTile[][]): CodeEmitTile[][] {
 
 function createImageDataForCodeEmit(
 	inputs: CromImageInput[],
-	tiles: CROMTile[][][]
+	tiles: CROMTileMatrix[]
 ): CodeEmitImage[] {
 	const finalTiles = denormalizeDupes(tiles, 'cromIndex');
 
@@ -57,7 +64,7 @@ function createImageDataForCodeEmit(
 const cromImages: ICROMGenerator = {
 	jsonKey: 'cromImages',
 
-	getCROMSources(rootDir: string, inputJson: Json): CROMTile[][][] {
+	getCROMSources(rootDir: string, inputJson: Json) {
 		const { inputs } = inputJson as CromImagesJsonSpec;
 
 		return inputs.map((input) => {
@@ -69,7 +76,7 @@ const cromImages: ICROMGenerator = {
 		});
 	},
 
-	getCROMSourceFiles(rootDir: string, inputJson: Json, tiles: CROMTile[][][]) {
+	getCROMSourceFiles(rootDir: string, inputJson: Json, tiles) {
 		const { inputs, codeEmit } = inputJson as CromImagesJsonSpec;
 
 		const images = createImageDataForCodeEmit(inputs, tiles);

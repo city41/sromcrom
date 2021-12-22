@@ -65,20 +65,23 @@ export type CROMTile = {
 	cromIndex?: number;
 };
 
+export type CROMTileMatrixRow = Array<CROMTile | null>;
+export type CROMTileMatrix = CROMTileMatrixRow[];
+
 export type ICROMGenerator = {
 	jsonKey: string;
 
-	getCROMSources: (rootDir: string, jsonSpec: Json) => CROMTile[][][];
+	getCROMSources: (rootDir: string, jsonSpec: Json) => CROMTileMatrix[];
 
 	setCROMPositions?: (
 		rootDir: string,
 		jsonSpec: Json,
-		cromTiles: CROMTile[][][]
+		cromTiles: CROMTileMatrix[]
 	) => void;
 
 	getCROMSourceFiles?: (
 		rootDir: string,
 		jsonSpec: Json,
-		cromTiles: CROMTile[][][]
+		cromTiles: CROMTileMatrix[]
 	) => FileToWrite[];
 };

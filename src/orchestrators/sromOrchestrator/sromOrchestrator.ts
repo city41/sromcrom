@@ -24,15 +24,11 @@ function orchestrate(
 	resourceJson: Json,
 	palettesStartingIndex: number
 ): { palettes: Palette16Bit[]; filesToWrite: FileToWrite[] } {
-	const sromGenerators: ISROMGenerator[] = availableSROMGenerators.reduce<
-		ISROMGenerator[]
-	>((building, generatorKey) => {
-		if (resourceJson[generatorKey]) {
-			return building.concat(generators[generatorKey]);
-		} else {
-			return building;
-		}
-	}, []);
+	const sromGenerators = availableSROMGenerators
+		.filter((generatorKey) => !!resourceJson[generatorKey])
+		.map((generatorKey) => {
+			return generators[generatorKey];
+		});
 
 	// if the proGearSpec image was not specified, then we add this generator
 	// who will ensure that the tile at 0xff is blank. If the image is specified,
@@ -42,24 +38,22 @@ function orchestrate(
 		sromGenerators.push(ffBlankGenerator);
 	}
 
-	const sromSourcesResult = sromGenerators.reduce<GeneratorWithSROMTiles[]>(
-		(building, generator) => {
-			const tiles = generator.getSROMSources(
-				rootDir,
-				resourceJson[generator.jsonKey] as Json
-			);
+	const sromSourcesResult = sromGenerators.map((generator) => {
+		const tiles = generator.getSROMSources(
+			rootDir,
+			resourceJson[generator.jsonKey] as Json
+		);
 
-			return building.concat({
-				tiles,
-				generator,
-			});
-		},
-		[]
-	);
+		return {
+			tiles,
+			generator,
+		};
+	});
 
-	const allTiles = sromSourcesResult.reduce<SROMTile[]>((building, input) => {
-		return building.concat(input.tiles.flat(2));
-	}, []);
+	const allTiles = sromSourcesResult
+		.map((input) => input.tiles)
+		.flat(3)
+		.filter((t) => t !== null) as SROMTile[];
 
 	const finalPalettes = determinePalettes(allTiles, palettesStartingIndex);
 

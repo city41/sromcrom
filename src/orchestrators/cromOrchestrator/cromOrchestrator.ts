@@ -1,7 +1,7 @@
 import path from 'path';
 
 import { Palette16Bit } from '../../api/palette/types';
-import { ICROMGenerator } from '../../api/crom/types';
+import { CROMTile, ICROMGenerator } from '../../api/crom/types';
 import { determinePalettes } from '../common/determinePalettes';
 import { FileToWrite, Json } from '../../types';
 import { indexCroms } from './indexCroms';
@@ -46,7 +46,10 @@ function orchestrate(
 		};
 	});
 
-	const allTiles = cromSourcesResult.map((input) => input.tiles).flat(3);
+	const allTiles = cromSourcesResult
+		.map((input) => input.tiles)
+		.flat(3)
+		.filter((t) => t !== null) as CROMTile[];
 
 	const finalPalettes = determinePalettes(allTiles, palettesStartingIndex);
 

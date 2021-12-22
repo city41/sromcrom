@@ -30,7 +30,10 @@ function positionCroms(
 	});
 
 	const allTiles = inputs.reduce<CROMTile[]>((building, input) => {
-		return building.concat(input.tiles.flat(2));
+		const actualTiles = input.tiles
+			.flat(2)
+			.filter((t) => t !== null) as CROMTile[];
+		return building.concat(actualTiles);
 	}, []);
 
 	const canGoAnywhere = allTiles.filter(
@@ -65,21 +68,21 @@ function positionCroms(
 		canGoAnywhere.length > 0
 	) {
 		if (curIndex % 8 === 0 && mustGoOnEights.length > 0) {
-			const tile = mustGoOnEights.pop();
+			const tile = mustGoOnEights.shift();
 			tile!.cromIndex = curIndex++;
 
 			for (let c = 0; c < tile!.childAnimationFrames!.length; ++c) {
 				tile!.childAnimationFrames![c].cromIndex = curIndex++;
 			}
 		} else if (curIndex % 4 === 0 && mustGoOnFours.length > 0) {
-			const tile = mustGoOnFours.pop();
+			const tile = mustGoOnFours.shift();
 			tile!.cromIndex = curIndex++;
 
 			for (let c = 0; c < tile!.childAnimationFrames!.length; ++c) {
 				tile!.childAnimationFrames![c].cromIndex = curIndex++;
 			}
 		} else if (canGoAnywhere.length > 0) {
-			const tile = canGoAnywhere.pop();
+			const tile = canGoAnywhere.shift();
 			tile!.cromIndex = curIndex++;
 		}
 	}

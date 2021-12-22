@@ -1,9 +1,9 @@
 import path from 'path';
 import fs from 'fs';
 import ejs from 'ejs';
-import { getCanvasContextFromImagePath } from '../../api/canvas';
+import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
-import { CROMTile, ICROMGenerator } from '../../api/crom/types';
+import { CROMTile, CROMTileMatrix, ICROMGenerator } from '../../api/crom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { CodeEmit, FileToWrite } from '../../types';
 
@@ -23,15 +23,22 @@ type CodeEmitTile = {
 	autoAnimation?: 4 | 8;
 };
 
+type CodeEmitTileMatrixRow = Array<CodeEmitTile | null>;
+type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
+
 type CodeEmitImage = {
 	name: string;
 	imageFile: string;
-	tiles: CodeEmitTile[][];
+	tiles: CodeEmitTileMatrix;
 };
 
-function toCodeEmitTiles(inputTiles: CROMTile[][]): CodeEmitTile[][] {
+function toCodeEmitTiles(inputTiles: CROMTileMatrix): CodeEmitTileMatrix {
 	return inputTiles.map((inputRow) => {
 		return inputRow.map((inputTile) => {
+			if (inputTile === null) {
+				return null;
+			}
+
 			return {
 				index: inputTile.cromIndex!,
 				paletteIndex: inputTile.paletteIndex!,
@@ -42,7 +49,7 @@ function toCodeEmitTiles(inputTiles: CROMTile[][]): CodeEmitTile[][] {
 
 function createTilesetDataForCodeEmit(
 	inputs: TilesetInput[],
-	tiles: CROMTile[][][]
+	tiles: CROMTileMatrix[]
 ): CodeEmitImage[] {
 	const finalTiles = denormalizeDupes(tiles, 'cromIndex');
 

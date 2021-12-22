@@ -1,9 +1,31 @@
 # sromcrom
 
-A tool for converting modern graphic formats into the binary rom formats needed for a Neo Geo game, as well as emitting C code for integrating the graphics into your game.
+A tool for converting modern graphic formats into the binary rom formats needed for a Neo Geo game, as well as emitting code for integrating the graphics into your game.
+
+Sromcrom understands all srom and crom limitations and features, such as eyecatcher and other srom specifics, as well as crom auto animations.
+
+Sromcrom allows you to generate code using ejs templates, so it has almost no assumptions about how your codebase is. You should be able to adopt sromcrom to emit any kind of code to meet your needs, in any language (ie C, assembly, C++, etc).
+
+## Features
+
+- complete eyecatcher support.
+- ensures srom tile 0xFF is empty as required by the system
+  - this assurance is met whether or not you specify an eyecatcher
+- crom auto animation tiles are placed at proper boundaries
+- tile deduping for both srom and crom
+- frame based crom animations
+- merging of palettes
+- ensures the first color of palette zero is the required black
+- code generation via ejs templates
+
+### Features to come
+
+- aseprite support
+- alternate palettes
+- frame based srom animations
+
+I would love to expand sromcrom into a full gui application that really lets you manage your graphics. But that is a huge endeavour so who knows if I'll ever do it. Sromcrom's codebase was written with this use case in mind.
 
 ## Status
 
-This is a rewrite of an old graphics pipeline tool I wrote. Taking the lessons learned from that one I am building sromcrom to be flexible and easier to work on.
-
-Currently very early, it only emits eyecatcher related imagery into C and S roms. But I don't think getting the old version fully ported over will take too long.
+I am actively using sromcrom to build the Neo Geo game I am working on. It works quite well but I am going to keep building my game for a while and harden sromcrom in the process. Once I am confident sromcrom is stable and meets all use cases, I will write documentation and release a 1.0 version.

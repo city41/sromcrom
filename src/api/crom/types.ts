@@ -65,8 +65,8 @@ export type CROMTile = {
 	cromIndex?: number;
 };
 
-export type CROMTileMatrixRow = Array<CROMTile | null>;
-export type CROMTileMatrix = CROMTileMatrixRow[];
+export type CROMTileMatrixCol = Array<CROMTile | null>;
+export type CROMTileMatrix = CROMTileMatrixCol[];
 
 export type ICROMGenerator = {
 	jsonKey: string;

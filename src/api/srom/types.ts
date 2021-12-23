@@ -40,8 +40,8 @@ export type SROMTile = {
 	sromIndex?: number;
 };
 
-export type SROMTileMatrixRow = Array<SROMTile | null>;
-export type SROMTileMatrix = SROMTileMatrixRow[];
+export type SROMTileMatrixCol = Array<SROMTile | null>;
+export type SROMTileMatrix = SROMTileMatrixCol[];
 
 export type ISROMGenerator = {
 	jsonKey: string;

@@ -2,17 +2,17 @@ import { NodeCanvasRenderingContext2D } from 'canvas';
 import { extractSubCanvas } from '../canvas/extractSubCanvas';
 import { isCanvasBlank } from '../canvas/isCanvasBlank';
 import { CROM_TILE_SIZE_PX } from './constants';
-import type { CROMTileMatrix, CROMTileMatrixRow } from './types';
+import type { CROMTileMatrix, CROMTileMatrixCol } from './types';
 
 export function extractCromTileSources(
 	context: NodeCanvasRenderingContext2D
 ): CROMTileMatrix {
 	const result: CROMTileMatrix = [];
 
-	for (let y = 0; y < context.canvas.height; y += CROM_TILE_SIZE_PX) {
-		const row: CROMTileMatrixRow = [];
+	for (let x = 0; x < context.canvas.width; x += CROM_TILE_SIZE_PX) {
+		const col: CROMTileMatrixCol = [];
 
-		for (let x = 0; x < context.canvas.width; x += CROM_TILE_SIZE_PX) {
+		for (let y = 0; y < context.canvas.height; y += CROM_TILE_SIZE_PX) {
 			const canvasSource = extractSubCanvas(
 				context,
 				x,
@@ -22,13 +22,13 @@ export function extractCromTileSources(
 			);
 
 			if (isCanvasBlank(canvasSource)) {
-				row.push(null);
+				col.push(null);
 			} else {
-				row.push({ canvasSource });
+				col.push({ canvasSource });
 			}
 		}
 
-		result.push(row);
+		result.push(col);
 	}
 
 	return result;

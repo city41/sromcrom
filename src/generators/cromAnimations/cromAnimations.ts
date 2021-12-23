@@ -29,7 +29,6 @@ type CromAnimationInputJsonSpec = {
 type CodeEmitTile = {
 	index: number;
 	paletteIndex: number;
-	autoAnimation?: 4 | 8;
 };
 
 type CodeEmitTileMatrixRow = Array<CodeEmitTile | null>;
@@ -75,7 +74,7 @@ function getNumberOfFrames(rootDir: string, animation: CromAnimation): number {
 function getCustomPropObject(
 	animation: CromAnimation
 ): Record<string, unknown> {
-	const { name, imageFile, tileWidth, autoAnimation, ...custom } = animation;
+	const { name, imageFile, tileWidth, ...custom } = animation;
 	return custom;
 }
 
@@ -91,7 +90,6 @@ function toCodeEmitAnimations(
 		return {
 			name: animation.name,
 			imageFile: animation.imageFile,
-			autoAnimation: animation.autoAnimation,
 			durations: animation.durations,
 			frames: frames.map(toCodeEmitTiles),
 			custom: getCustomPropObject(animation),
@@ -137,36 +135,6 @@ function createAnimationDataForCodeEmit(
 	});
 }
 
-function sliceOutFrame(
-	tiles: CROMTileMatrix,
-	startX: number,
-	endX: number
-): CROMTileMatrix {
-	const rows: CROMTileMatrix = [];
-
-	for (let y = 0; y < tiles.length; ++y) {
-		rows.push(tiles[y].slice(startX, endX));
-	}
-
-	return rows;
-}
-
-function applyChildTiles(
-	masterFrame: CROMTile[][],
-	childFrames: CROMTile[][][]
-) {
-	for (let f = 0; f < childFrames.length; ++f) {
-		for (let y = 0; y < childFrames[f].length; ++y) {
-			for (let x = 0; x < childFrames[f][y].length; ++x) {
-				// @ts-ignore it wants this array to already be 3 or 7 in size
-				masterFrame[y][x].childAnimationFrames ??= [];
-				masterFrame[y][x].childAnimationFrames!.push(childFrames[f][y][x]);
-				childFrames[f][y][x].childOf = masterFrame[y][x];
-			}
-		}
-	}
-}
-
 const cromAnimations: ICROMGenerator = {
 	jsonKey: 'cromAnimations',
 
@@ -186,31 +154,8 @@ const cromAnimations: ICROMGenerator = {
 					const imageWidthTiles = context.canvas.width / CROM_TILE_SIZE_PX;
 
 					for (let x = 0; x < imageWidthTiles; x += animation.tileWidth ?? 1) {
-						const frame = sliceOutFrame(
-							allTiles,
-							x,
-							x + (animation.tileWidth ?? 1)
-						);
+						const frame = allTiles.slice(x, x + (animation.tileWidth ?? 1));
 						frames.push(frame);
-					}
-
-					if (animation.autoAnimation) {
-						if (frames.length !== animation.autoAnimation) {
-							throw new Error(
-								`cromAnimations: ${animation.name} (${animation.imageFile}) is an auto animation of ${animation.autoAnimation} but has ${frames.length} frames`
-							);
-						}
-
-						if (frames.flat(3).some((f) => f === null)) {
-							throw new Error(
-								`cromAnimations: ${animation.name} (${animation.imageFile}) is an auto animation of ${animation.autoAnimation} but has blank frames. If a frame should be empty, use magenta instead of alpha=0`
-							);
-						}
-
-						applyChildTiles(
-							frames[0] as CROMTile[][],
-							frames.slice(1) as CROMTile[][][]
-						);
 					}
 
 					return building.concat(frames);

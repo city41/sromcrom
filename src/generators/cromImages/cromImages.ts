@@ -4,6 +4,7 @@ import ejs from 'ejs';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
 import { ICROMGenerator, CROMTile, CROMTileMatrix } from '../../api/crom/types';
+import { CROM_TILE_SIZE_PX } from '../..//api/crom/constants';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { CodeEmit, FileToWrite, Json } from '../../types';
 
@@ -33,6 +34,22 @@ type CodeEmitImage = {
 	imageFile: string;
 	tiles: CodeEmitTileMatrix;
 };
+
+function applyChildTiles(
+	masterFrame: CROMTile[][],
+	childFrames: CROMTile[][][]
+) {
+	for (let f = 0; f < childFrames.length; ++f) {
+		for (let y = 0; y < childFrames[f].length; ++y) {
+			for (let x = 0; x < childFrames[f][y].length; ++x) {
+				// @ts-ignore it wants this array to already be 3 or 7 in size
+				masterFrame[y][x].childAnimationFrames ??= [];
+				masterFrame[y][x].childAnimationFrames!.push(childFrames[f][y][x]);
+				childFrames[f][y][x].childOf = masterFrame[y][x];
+			}
+		}
+	}
+}
 
 function toCodeEmitTiles(inputTiles: CROMTileMatrix): CodeEmitTileMatrix {
 	return inputTiles.map((inputRow) => {
@@ -74,7 +91,38 @@ const cromImages: ICROMGenerator = {
 				path.resolve(rootDir, input.imageFile)
 			);
 
-			return extractCromTileSources(context);
+			const allTiles = extractCromTileSources(context);
+
+			if (input.autoAnimation) {
+				const tileWidth = input.tileWidth ?? 1;
+				const canvasWidthInTiles = context.canvas.width / CROM_TILE_SIZE_PX;
+				const frameCount = canvasWidthInTiles / tileWidth;
+
+				if (frameCount !== input.autoAnimation) {
+					throw new Error(
+						`cromImages: ${input.name} (${input.imageFile}) is an auto animation of ${input.autoAnimation} but has ${frameCount} frames`
+					);
+				}
+
+				if (allTiles.some((f) => f === null)) {
+					throw new Error(
+						`cromAnimations: ${input.name} (${input.imageFile}) is an auto animation of ${input.autoAnimation} but has blank frames. If a frame should be empty, use magenta instead of alpha=0`
+					);
+				}
+
+				const frames: CROMTileMatrix[] = [];
+
+				for (let x = 0; x < canvasWidthInTiles; x += tileWidth) {
+					frames.push(allTiles.slice(x, x + tileWidth));
+				}
+
+				applyChildTiles(
+					frames[0] as CROMTile[][],
+					frames.slice(1) as CROMTile[][][]
+				);
+			}
+
+			return allTiles;
 		});
 	},
 

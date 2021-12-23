@@ -4,8 +4,9 @@ import ejs from 'ejs';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
-import { CROMTile, CROMTileMatrix, ICROMGenerator } from '../../api/crom/types';
+import { CROMTileMatrix, ICROMGenerator } from '../../api/crom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
+import { sliceOutFrame } from '../../api/tile/sliceOutFrame';
 import { CodeEmit, FileToWrite } from '../../types';
 
 type CromAnimation = {
@@ -154,7 +155,11 @@ const cromAnimations: ICROMGenerator = {
 					const imageWidthTiles = context.canvas.width / CROM_TILE_SIZE_PX;
 
 					for (let x = 0; x < imageWidthTiles; x += animation.tileWidth ?? 1) {
-						const frame = allTiles.slice(x, x + (animation.tileWidth ?? 1));
+						const frame = sliceOutFrame(
+							allTiles,
+							x,
+							x + (animation.tileWidth ?? 1)
+						);
 						frames.push(frame);
 					}
 

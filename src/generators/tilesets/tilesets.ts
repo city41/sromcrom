@@ -10,7 +10,6 @@ import { CodeEmit, FileToWrite } from '../../types';
 type TilesetInput = {
 	name: string;
 	imageFile: string;
-	order?: 'row' | 'column';
 };
 
 type TilesetsJsonSpec = {
@@ -75,7 +74,7 @@ const tilesets: ICROMGenerator = {
 				path.resolve(rootDir, input.imageFile)
 			);
 
-			return extractCromTileSources(context, input.order);
+			return extractCromTileSources(context);
 		});
 	},
 	getCROMSourceFiles(rootDir, inputJson, tiles) {

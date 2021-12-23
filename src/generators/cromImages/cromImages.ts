@@ -10,6 +10,8 @@ import { CodeEmit, FileToWrite, Json } from '../../types';
 type CromImageInput = {
 	name: string;
 	imageFile: string;
+	tileWidth?: number;
+	autoAnimation?: number;
 };
 
 type CromImagesJsonSpec = {

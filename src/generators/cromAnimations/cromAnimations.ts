@@ -12,7 +12,7 @@ type CromAnimation = {
 	name: string;
 	imageFile: string;
 	tileWidth?: number;
-	autoAnimation?: 4 | 8;
+	durations?: number;
 	[key: string]: unknown;
 };
 
@@ -38,7 +38,7 @@ type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
 type CodeEmitAnimation = {
 	name: string;
 	imageFile: string;
-	autoAnimation?: 4 | 8;
+	durations?: number;
 	frames: CodeEmitTileMatrix[];
 	custom: Record<string, unknown>;
 };
@@ -64,10 +64,6 @@ function toCodeEmitTiles(inputTiles: CROMTileMatrix): CodeEmitTileMatrix {
 }
 
 function getNumberOfFrames(rootDir: string, animation: CromAnimation): number {
-	if (animation.autoAnimation) {
-		return animation.autoAnimation;
-	}
-
 	// TODO: figure out how to do this without dipping back into the canvas
 	const context = getCanvasContextFromImagePath(
 		path.resolve(rootDir, animation.imageFile)
@@ -96,6 +92,7 @@ function toCodeEmitAnimations(
 			name: animation.name,
 			imageFile: animation.imageFile,
 			autoAnimation: animation.autoAnimation,
+			durations: animation.durations,
 			frames: frames.map(toCodeEmitTiles),
 			custom: getCustomPropObject(animation),
 		};

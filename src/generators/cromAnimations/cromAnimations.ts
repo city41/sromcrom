@@ -99,6 +99,10 @@ function toCodeEmitAnimations(
 	});
 }
 
+function getMaxWidth(animations: CromAnimation[]): number {
+	return Math.max(...animations.map((a) => a.tileWidth ?? 1));
+}
+
 function createAnimationDataForCodeEmit(
 	rootDir: string,
 	inputs: CromAnimationInput[],
@@ -123,6 +127,7 @@ function createAnimationDataForCodeEmit(
 
 		return {
 			name: input.name,
+			maxWidth: getMaxWidth(input.animations),
 			animations: toCodeEmitAnimations(
 				rootDir,
 				input.animations,

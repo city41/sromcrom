@@ -6,6 +6,7 @@ import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
 import { ICROMGenerator, CROMTile, CROMTileMatrix } from '../../api/crom/types';
 import { CROM_TILE_SIZE_PX } from '../..//api/crom/constants';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
+import { sliceOutFrame } from '../../api/tile/sliceOutFrame';
 import { CodeEmit, FileToWrite, Json } from '../../types';
 
 type CromImageInput = {
@@ -113,7 +114,8 @@ const cromImages: ICROMGenerator = {
 				const frames: CROMTileMatrix[] = [];
 
 				for (let x = 0; x < canvasWidthInTiles; x += tileWidth) {
-					frames.push(allTiles.slice(x, x + tileWidth));
+					const frame = sliceOutFrame(allTiles, x, x + tileWidth);
+					frames.push(frame);
 				}
 
 				applyChildTiles(

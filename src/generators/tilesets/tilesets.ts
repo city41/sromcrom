@@ -14,7 +14,10 @@ type TilesetInput = {
 
 type TilesetsJsonSpec = {
 	inputs: TilesetInput[];
-	codeEmit?: CodeEmit[];
+	codeEmit?: {
+		preEmit?: string;
+		inputs: CodeEmit[];
+	};
 };
 
 type CodeEmitTile = {
@@ -77,13 +80,29 @@ const tilesets: ICROMGenerator = {
 	getCROMSourceFiles(rootDir, inputJson, tiles) {
 		const { inputs, codeEmit } = inputJson as TilesetsJsonSpec;
 
+		if (!codeEmit) {
+			return [];
+		}
+
+		const { preEmit, inputs: codeEmits } = codeEmit;
+
 		const tilesets = createTilesetDataForCodeEmit(inputs, tiles);
 
-		return (codeEmit ?? []).map<FileToWrite>((codeEmit) => {
+		let renderData: Record<string, unknown>;
+
+		if (preEmit) {
+			const preEmitPath = path.resolve(rootDir, preEmit);
+			const preEmitModule = require(preEmitPath);
+			renderData = preEmitModule(rootDir, tilesets);
+		} else {
+			renderData = { tilesets };
+		}
+
+		return (codeEmits ?? []).map<FileToWrite>((codeEmit) => {
 			const templatePath = path.resolve(rootDir, codeEmit.template);
 			const template = fs.readFileSync(templatePath).toString();
 
-			const code = ejs.render(template, { tilesets });
+			const code = ejs.render(template, renderData);
 
 			return {
 				path: path.resolve(rootDir, codeEmit.dest),

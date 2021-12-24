@@ -14,6 +14,7 @@ type CromImageInput = {
 	imageFile: string;
 	tileWidth?: number;
 	autoAnimation?: number;
+	[key: string]: unknown;
 };
 
 type CromImagesJsonSpec = {
@@ -34,6 +35,7 @@ type CodeEmitImage = {
 	name: string;
 	imageFile: string;
 	tiles: CodeEmitTileMatrix;
+	custom: Record<string, unknown>;
 };
 
 function applyChildTiles(
@@ -67,6 +69,13 @@ function toCodeEmitTiles(inputTiles: CROMTileMatrix): CodeEmitTileMatrix {
 	});
 }
 
+function getCustomPropObject(
+	input: CromImageInput
+): Record<string, unknown> {
+	const { name, imageFile, tileWidth, ...custom } = input;
+	return custom;
+}
+
 function createImageDataForCodeEmit(
 	inputs: CromImageInput[],
 	tiles: CROMTileMatrix[]
@@ -77,6 +86,7 @@ function createImageDataForCodeEmit(
 		return {
 			...input,
 			tiles: toCodeEmitTiles(finalTiles[i]),
+			custom: getCustomPropObject(input)
 		};
 	});
 }

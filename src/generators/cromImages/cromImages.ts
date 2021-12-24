@@ -54,7 +54,14 @@ function applyChildTiles(
 	}
 }
 
-function toCodeEmitTiles(inputTiles: CROMTileMatrix): CodeEmitTileMatrix {
+function toCodeEmitTiles(input: CromImageInput, inputTiles: CROMTileMatrix): CodeEmitTileMatrix {
+	// if this crom image is an auto animation, then the inputTiles has all the frames of the animation,
+	// but for code emit, we want to treat it just like an image, so just slice out the first frame
+	// and ignore the others. They got emitted into the crom properly
+	if (input.autoAnimation) {
+		inputTiles = sliceOutFrame(inputTiles, 0, input.tileWidth ?? 1);
+	}
+	
 	return inputTiles.map((inputRow) => {
 		return inputRow.map((inputTile) => {
 			if (inputTile === null) {
@@ -85,7 +92,7 @@ function createImageDataForCodeEmit(
 	return inputs.map((input, i) => {
 		return {
 			...input,
-			tiles: toCodeEmitTiles(finalTiles[i]),
+			tiles: toCodeEmitTiles(input, finalTiles[i]),
 			custom: getCustomPropObject(input)
 		};
 	});

@@ -34,7 +34,7 @@ function orchestrate(
 	// who will ensure that the tile at 0xff is blank. If the image is specified,
 	// then that image needs to have a blank tile at that spot, and if it doesn't,
 	// the user will be warned
-	if (!(resourceJson as any).eyecatcher.proGearSpecImageFile) {
+	if (!(resourceJson as any).eyecatcher?.proGearSpecImageFile) {
 		sromGenerators.push(ffBlankGenerator);
 	}
 

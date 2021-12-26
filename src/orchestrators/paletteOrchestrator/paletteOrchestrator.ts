@@ -16,7 +16,7 @@ function orchestrate(
 ): { filesToWrite: FileToWrite[] } {
 	const finalPalettes = [BLACK_PALETTE].concat(palettes);
 
-	const { codeEmit } = resourceJson.palettes as PalettesSpec;
+	const { codeEmit } = (resourceJson.palettes ?? {}) as PalettesSpec;
 
 	const filesToWrite = (codeEmit ?? []).map<FileToWrite>((codeEmit) => {
 		const templatePath = path.resolve(rootDir, codeEmit.template);

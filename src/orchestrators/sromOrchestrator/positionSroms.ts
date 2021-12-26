@@ -58,7 +58,7 @@ function positionSroms(
 			++curAnywhereIndex;
 		}
 
-		const tile = canGoAnywhere.pop();
+		const tile = canGoAnywhere.shift();
 		tile!.sromIndex = curAnywhereIndex++;
 	}
 }

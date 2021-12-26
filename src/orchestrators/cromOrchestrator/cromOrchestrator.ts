@@ -69,16 +69,20 @@ function orchestrate(
 	const cromBinaries = emitCromBinaries(allTiles);
 
 	// TODO: emit more than one pair when croms get too big
-	const cromFilesToWrite: FileToWrite[] = [
-		{
-			path: path.resolve(rootDir, resourceJson.romPathRoot + 'c1.c1'),
-			contents: Buffer.from(new Uint8Array(cromBinaries.cOddData)),
-		},
-		{
-			path: path.resolve(rootDir, resourceJson.romPathRoot + 'c2.c2'),
-			contents: Buffer.from(new Uint8Array(cromBinaries.cEvenData)),
-		},
-	];
+	const cromFilesToWrite: FileToWrite[] = [];
+
+	if (cromBinaries.cOddData.length > 0) {
+		cromFilesToWrite.push(
+			{
+				path: path.resolve(rootDir, resourceJson.romPathRoot + 'c1.c1'),
+				contents: Buffer.from(new Uint8Array(cromBinaries.cOddData)),
+			},
+			{
+				path: path.resolve(rootDir, resourceJson.romPathRoot + 'c2.c2'),
+				contents: Buffer.from(new Uint8Array(cromBinaries.cEvenData)),
+			}
+		);
+	}
 
 	const otherFilesToWrite = cromSourcesResult.reduce<FileToWrite[]>(
 		(building, sromResult) => {

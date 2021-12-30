@@ -1,3 +1,4 @@
+import { padTo } from '../../api/util/padTo';
 import { CROM_TILE_HALF_SIZE_BYTES } from '../../api/crom/constants';
 import { CROMTile } from '../../api/crom/types';
 
@@ -19,7 +20,10 @@ function sortByCromIndex(a: CROMTile, b: CROMTile): number {
 
 const EMPTY_TILE = new Array(CROM_TILE_HALF_SIZE_BYTES).fill(0);
 
-function emitCromBinaries(sourceTiles: CROMTile[]) {
+function emitCromBinaries(
+	sourceTiles: CROMTile[],
+	padToSize?: number | null | undefined
+) {
 	const allTiles = [...sourceTiles].sort(sortByCromIndex);
 
 	const cEvenData: number[] = [];
@@ -56,7 +60,10 @@ function emitCromBinaries(sourceTiles: CROMTile[]) {
 		++curIndex;
 	}
 
-	return { cEvenData, cOddData };
+	return {
+		cEvenData: padTo(cEvenData, Math.max(padToSize ?? 0, cEvenData.length)),
+		cOddData: padTo(cOddData, Math.max(padToSize ?? 0, cOddData.length)),
+	};
 }
 
 export { emitCromBinaries };

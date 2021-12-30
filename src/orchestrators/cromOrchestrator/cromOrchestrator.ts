@@ -66,7 +66,10 @@ function orchestrate(
 	// again done with an in place mutation
 	positionCroms(rootDir, resourceJson, cromSourcesResult);
 
-	const cromBinaries = emitCromBinaries(allTiles);
+	const cromBinaries = emitCromBinaries(
+		allTiles,
+		resourceJson.padCROMFilesTo as number | null | undefined
+	);
 
 	// TODO: emit more than one pair when croms get too big
 	const cromFilesToWrite: FileToWrite[] = [];

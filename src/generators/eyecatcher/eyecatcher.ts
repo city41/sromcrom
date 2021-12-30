@@ -135,14 +135,21 @@ function setSROMPositions(sromTiles: SROMTile[][], positions: number[][]) {
 	}
 }
 
-function widenMainImageByOneTile(
+function widenMainImageByOneColumn(
 	inputContext: NodeCanvasRenderingContext2D
 ): NodeCanvasRenderingContext2D {
 	const destCanvas = createCanvas(
-		EYECATCHER_MAIN_IMAGE_SIZE_PX.width,
+		EYECATCHER_MAIN_IMAGE_SIZE_PX.width + CROM_TILE_SIZE_PX,
 		EYECATCHER_MAIN_IMAGE_SIZE_PX.height
 	);
 	const destContext = destCanvas.getContext('2d');
+	destContext.fillStyle = `rgb(255, 0, 255)`;
+	destContext.fillRect(
+		0,
+		0,
+		destContext.canvas.width,
+		destContext.canvas.height
+	);
 
 	destContext.drawImage(inputContext.canvas, 0, 0);
 
@@ -199,7 +206,7 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 		// is strange. the top and bottom is not in the crom, and the middle tiles
 		// should be blank. The way we are enforcing this, is requiring an image that is 14
 		// tiles wide, then appending a blank tile column to the end
-		const finalContext = widenMainImageByOneTile(context);
+		const finalContext = widenMainImageByOneColumn(context);
 
 		const cromTileSources = extractCromTileSources(finalContext);
 

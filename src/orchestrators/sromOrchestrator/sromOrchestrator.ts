@@ -61,12 +61,12 @@ function orchestrate(
 	// making sure to keep associating a tile with the generator that initially provided it
 	indexSroms(allTiles);
 
-	// mark crom dupes, again keeping tiles associated with their generator
-	// this is done by mutating the croms in place, so no return needed
+	// mark srom dupes, again keeping tiles associated with their generator
+	// this is done by mutating the sroms in place, so no return needed
 	markSromDupes(allTiles);
 
-	// figure out where the croms will go in the binary rom file, taking into account
-	// croms that must be at a certain location (primarily the eyecatcher) and auto animations
+	// figure out where the sroms will go in the binary rom file, taking into account
+	// sroms that must be at a certain location (primarily the eyecatcher) and auto animations
 	// that must be positioned on a multiple of 4 or 8
 	// again done with an in place mutation
 	positionSroms(rootDir, resourceJson, sromSourcesResult);

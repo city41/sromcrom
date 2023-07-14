@@ -110,6 +110,12 @@ function mergePalettes(inputPaletteMap: PaletteMap): PaletteMap {
 }
 
 function padTo16Values(palette: Palette16Bit): Palette16Bit {
+	if (palette.length > 16) {
+		throw new Error(
+			`determinePalettes#patTo16Values: a palette has more than 16 values: ${palette.length}`
+		);
+	}
+
 	if (palette.length === 16) {
 		return palette;
 	}
@@ -171,7 +177,7 @@ function determinePalettes<TTile extends BaseTile | null, G>(
 	const mergedPaletteMap = mergePalettes(paletteMap);
 
 	// the merged palettes are the final palettes that will get loaded into the
-	// neo geo, so extract them out into an array, padding palettes as needed.
+	// neo geo, so extract them out into an array, later padding palettes as needed below.
 	// this array is ideal for dumping straight into C code
 	const finalPalettesNotYetPadded = Array.from(mergedPaletteMap.keys());
 

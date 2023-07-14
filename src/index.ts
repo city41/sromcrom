@@ -27,7 +27,7 @@ if (!options.input) {
 }
 
 // read JSON file
-const inputJsonPath = path.join(process.cwd(), options.input);
+const inputJsonPath = path.resolve(process.cwd(), options.input);
 const resourceJson = require(inputJsonPath);
 
 const rootDir = path.dirname(inputJsonPath);

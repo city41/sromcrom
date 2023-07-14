@@ -3,9 +3,9 @@ import path from 'path';
 import ejs from 'ejs';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
-import { ISROMGenerator, SROMTile, SROMTileMatrix } from '../../api/srom/types';
+import { ISROMGenerator, SROMTileMatrix } from '../../api/srom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
-import { CodeEmit, FileToWrite, Json } from '../../types';
+import { CodeEmit, FileToWrite } from '../../types';
 
 type SromImageInput = {
 	name: string;

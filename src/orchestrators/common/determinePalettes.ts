@@ -162,7 +162,7 @@ function assignPalettes(
 	});
 }
 
-function determinePalettes<TTile extends BaseTile | null, G>(
+function determinePalettes<TTile extends BaseTile | null>(
 	allTiles: TTile[],
 	paletteStartIndex: number
 ): Palette16Bit[] {

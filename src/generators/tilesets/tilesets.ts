@@ -3,7 +3,7 @@ import fs from 'fs';
 import ejs from 'ejs';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
-import { CROMTile, CROMTileMatrix, ICROMGenerator } from '../../api/crom/types';
+import { CROMTileMatrix, ICROMGenerator } from '../../api/crom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { CodeEmit, FileToWrite } from '../../types';
 

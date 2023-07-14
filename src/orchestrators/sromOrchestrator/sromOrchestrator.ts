@@ -11,7 +11,6 @@ import { emitSromBinary } from './emitSromBinary';
 import { eyecatcher } from '../../generators/eyecatcher';
 import { sromImages } from '../../generators/sromImages';
 import { ffBlankGenerator } from './ffBlankGenerator';
-import { GeneratorWithSROMTiles } from './types';
 
 const generators: Record<string, ISROMGenerator> = {
 	eyecatcher,
@@ -34,6 +33,7 @@ function orchestrate(
 	// who will ensure that the tile at 0xff is blank. If the image is specified,
 	// then that image needs to have a blank tile at that spot, and if it doesn't,
 	// the user will be warned
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	if (!(resourceJson as any).eyecatcher?.proGearSpecImageFile) {
 		sromGenerators.push(ffBlankGenerator);
 	}

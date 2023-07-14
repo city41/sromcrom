@@ -84,7 +84,7 @@ function toCodeEmitAnimations(
 	animations: CromAnimation[],
 	inputTiles: CROMTileMatrix[]
 ): CodeEmitAnimation[] {
-	return animations.map((animation, i) => {
+	return animations.map((animation) => {
 		const numFrames = getNumberOfFrames(rootDir, animation);
 		const frames = inputTiles.splice(0, numFrames);
 
@@ -110,7 +110,7 @@ function createAnimationDataForCodeEmit(
 	const finalTiles = denormalizeDupes(tiles, 'cromIndex');
 
 	let sliceIndex = 0;
-	return inputs.map((input, i) => {
+	return inputs.map((input) => {
 		const totalFrames = input.animations.reduce<number>(
 			(building, animation) => {
 				return building + getNumberOfFrames(rootDir, animation);

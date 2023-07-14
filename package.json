@@ -20,6 +20,9 @@
 		"@types/jest": "^27.0.3",
 		"@types/lodash": "^4.14.178",
 		"@types/node": "^17.0.0",
+		"@typescript-eslint/eslint-plugin": "^6.0.0",
+		"@typescript-eslint/parser": "^6.0.0",
+		"eslint": "^8.44.0",
 		"jest": "^27.4.5",
 		"prettier": "^2.5.1",
 		"ts-jest": "^27.1.2",
@@ -27,6 +30,7 @@
 	},
 	"scripts": {
 		"test": "yarn jest",
+		"lint": "yarn eslint . --ext .ts",
 		"type-check": "tsc --noemit",
 		"start": "ts-node ./src/index.ts",
 		"testData": "mkdir -p testData/out && ts-node ./src/index.ts -i ./testData/sprites.json -o ./testData/out",

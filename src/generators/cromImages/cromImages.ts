@@ -45,7 +45,7 @@ function applyChildTiles(
 	for (let f = 0; f < childFrames.length; ++f) {
 		for (let y = 0; y < childFrames[f].length; ++y) {
 			for (let x = 0; x < childFrames[f][y].length; ++x) {
-				// @ts-ignore it wants this array to already be 3 or 7 in size
+				// @ts-expect-error it wants this array to already be 3 or 7 in size
 				masterFrame[y][x].childAnimationFrames ??= [];
 				masterFrame[y][x].childAnimationFrames!.push(childFrames[f][y][x]);
 				childFrames[f][y][x].childOf = masterFrame[y][x];
@@ -54,14 +54,17 @@ function applyChildTiles(
 	}
 }
 
-function toCodeEmitTiles(input: CromImageInput, inputTiles: CROMTileMatrix): CodeEmitTileMatrix {
+function toCodeEmitTiles(
+	input: CromImageInput,
+	inputTiles: CROMTileMatrix
+): CodeEmitTileMatrix {
 	// if this crom image is an auto animation, then the inputTiles has all the frames of the animation,
 	// but for code emit, we want to treat it just like an image, so just slice out the first frame
 	// and ignore the others. They got emitted into the crom properly
 	if (input.autoAnimation) {
 		inputTiles = sliceOutFrame(inputTiles, 0, input.tileWidth ?? 1);
 	}
-	
+
 	return inputTiles.map((inputRow) => {
 		return inputRow.map((inputTile) => {
 			if (inputTile === null) {
@@ -76,9 +79,7 @@ function toCodeEmitTiles(input: CromImageInput, inputTiles: CROMTileMatrix): Cod
 	});
 }
 
-function getCustomPropObject(
-	input: CromImageInput
-): Record<string, unknown> {
+function getCustomPropObject(input: CromImageInput): Record<string, unknown> {
 	const { name, imageFile, tileWidth, ...custom } = input;
 	return custom;
 }
@@ -93,7 +94,7 @@ function createImageDataForCodeEmit(
 		return {
 			...input,
 			tiles: toCodeEmitTiles(input, finalTiles[i]),
-			custom: getCustomPropObject(input)
+			custom: getCustomPropObject(input),
 		};
 	});
 }

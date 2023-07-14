@@ -1,4 +1,3 @@
-import exp from 'constants';
 import { CROMTile } from '../../../api/crom/types';
 import {
 	BLACK16,
@@ -6,7 +5,6 @@ import {
 	GREEN16,
 	GREEN24,
 	MAGENTA16,
-	MAGENTA24,
 	RED16,
 	RED24,
 	WHITE16,
@@ -39,7 +37,7 @@ describe('determinePalettes', function () {
 			canvasSource: getTestCanvas(BLACK24, RED24),
 		};
 
-		const result = determinePalettes([tile], 33);
+		determinePalettes([tile], 33);
 
 		expect(tile.paletteIndex).toEqual(33);
 	});

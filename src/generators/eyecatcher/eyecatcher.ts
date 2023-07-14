@@ -8,7 +8,6 @@ import type { CROMTile, ICROMGenerator } from '../../api/crom/types';
 import { ISROMGenerator, SROMTile, SROMTileMatrix } from '../../api/srom/types';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
 import { SROM_TILE_SIZE_PX } from '../../api/srom/constants';
-import { Json } from '../../types';
 import { isEqual } from 'lodash';
 
 type EyeCatcherJSONSpec = {

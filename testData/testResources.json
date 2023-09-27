@@ -1,0 +1,12 @@
+{
+	"romPathRoot": "./out/test-",
+	"padCROMFilesTo": 1048576,
+	"sromImages": {
+		"inputs": [
+			{
+				"name": "font",
+				"imageFile": "./fixFont.png"
+			}
+		]
+	}
+}

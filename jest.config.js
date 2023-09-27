@@ -6,10 +6,8 @@ module.exports = {
 			'<rootDir>/__jestMocks__/fileMock.js',
 		'\\.(css|less)$': 'identity-obj-proxy',
 	},
-	globals: {
-		'ts-jest': {
-			tsconfig: 'tsconfig.jest.json',
-		},
+	transform: {
+		'\\.ts': ['ts-jest', { tsconfig: 'tsconfig.jest.json' }],
 	},
 	testMatch: ['**/__tests__/**/*.test.ts'],
 };

@@ -39,6 +39,6 @@
 		"testData": "mkdir -p testData/out && ts-node ./src/index.ts -i ./testData/testResources.json",
 		"prebuild": "yarn type-check && yarn test",
 		"build": "tsc",
-		"prepublish": "npm run build"
+		"prepublish": "yarn build"
 	}
 }

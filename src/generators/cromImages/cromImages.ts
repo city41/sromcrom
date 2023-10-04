@@ -7,20 +7,11 @@ import { ICROMGenerator, CROMTile, CROMTileMatrix } from '../../api/crom/types';
 import { CROM_TILE_SIZE_PX } from '../..//api/crom/constants';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { sliceOutFrame } from '../../api/tile/sliceOutFrame';
-import { CodeEmit, FileToWrite, Json } from '../../types';
-
-type CromImageInput = {
-	name: string;
-	imageFile: string;
-	tileWidth?: number;
-	autoAnimation?: number;
-	[key: string]: unknown;
-};
-
-type CromImagesJsonSpec = {
-	inputs: CromImageInput[];
-	codeEmit?: CodeEmit[];
-};
+import {
+	CromImageInput,
+	CromImagesInputJsonSpec,
+	FileToWrite,
+} from '../../types';
 
 type CodeEmitTile = {
 	index: number;
@@ -99,11 +90,11 @@ function createImageDataForCodeEmit(
 	});
 }
 
-const cromImages: ICROMGenerator = {
+const cromImages: ICROMGenerator<CromImagesInputJsonSpec> = {
 	jsonKey: 'cromImages',
 
-	getCROMSources(rootDir: string, inputJson: Json) {
-		const { inputs } = inputJson as CromImagesJsonSpec;
+	getCROMSources(rootDir, input) {
+		const { inputs } = input;
 
 		return inputs.map((input) => {
 			const context = getCanvasContextFromImagePath(
@@ -146,12 +137,12 @@ const cromImages: ICROMGenerator = {
 		});
 	},
 
-	getCROMSourceFiles(rootDir: string, inputJson: Json, tiles) {
-		const { inputs, codeEmit } = inputJson as CromImagesJsonSpec;
+	getCROMSourceFiles(rootDir, input, tiles) {
+		const { inputs, codeEmit } = input;
 
 		const images = createImageDataForCodeEmit(inputs, tiles);
 
-		return (codeEmit ?? []).map<FileToWrite>((codeEmit) => {
+		return (codeEmit?.inputs ?? []).map<FileToWrite>((codeEmit) => {
 			const templatePath = path.resolve(rootDir, codeEmit.template);
 			const template = fs.readFileSync(templatePath).toString();
 

@@ -3,7 +3,7 @@ import path from 'path';
 import { Palette16Bit } from '../../api/palette/types';
 import { ISROMGenerator, SROMTile } from '../../api/srom/types';
 import { determinePalettes } from '../common/determinePalettes';
-import { FileToWrite, Json } from '../../types';
+import { FileToWrite, JsonInput } from '../../types';
 import { indexSroms } from './indexSroms';
 import { markSromDupes } from './markSromDupes';
 import { positionSroms } from './positionSroms';
@@ -20,11 +20,11 @@ const availableSROMGenerators = Object.keys(generators);
 
 function orchestrate(
 	rootDir: string,
-	resourceJson: Json,
+	input: JsonInput,
 	palettesStartingIndex: number
 ): { palettes: Palette16Bit[]; filesToWrite: FileToWrite[] } {
 	const sromGenerators = availableSROMGenerators
-		.filter((generatorKey) => !!resourceJson[generatorKey])
+		.filter((generatorKey) => !!input[generatorKey as keyof JsonInput])
 		.map((generatorKey) => {
 			return generators[generatorKey];
 		});
@@ -34,14 +34,14 @@ function orchestrate(
 	// then that image needs to have a blank tile at that spot, and if it doesn't,
 	// the user will be warned
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	if (!(resourceJson as any).eyecatcher?.proGearSpecImageFile) {
+	if (!(input as any).eyecatcher?.proGearSpecImageFile) {
 		sromGenerators.push(ffBlankGenerator);
 	}
 
 	const sromSourcesResult = sromGenerators.map((generator) => {
 		const tiles = generator.getSROMSources(
 			rootDir,
-			resourceJson[generator.jsonKey] as Json
+			input[generator.jsonKey as keyof JsonInput]
 		);
 
 		return {
@@ -69,11 +69,11 @@ function orchestrate(
 	// sroms that must be at a certain location (primarily the eyecatcher) and auto animations
 	// that must be positioned on a multiple of 4 or 8
 	// again done with an in place mutation
-	positionSroms(rootDir, resourceJson, sromSourcesResult);
+	positionSroms(rootDir, input, sromSourcesResult);
 
 	const sromBinaryData = emitSromBinary(allTiles);
 	const sromFileToWrite: FileToWrite = {
-		path: path.resolve(rootDir, resourceJson.romPathRoot + 's1.s1'),
+		path: path.resolve(rootDir, input.romPathRoot + 's1.s1'),
 		contents: Buffer.from(new Uint8Array(sromBinaryData)),
 	};
 
@@ -83,7 +83,7 @@ function orchestrate(
 				return building.concat(
 					sromResult.generator.getSROMSourceFiles(
 						rootDir,
-						resourceJson[sromResult.generator.jsonKey] as Json,
+						input[sromResult.generator.jsonKey as keyof JsonInput],
 						sromResult.tiles
 					)
 				);

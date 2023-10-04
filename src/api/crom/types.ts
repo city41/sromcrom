@@ -1,5 +1,5 @@
 import { Canvas } from 'canvas';
-import { FileToWrite, Json } from '../../types';
+import { FileToWrite } from '../../types';
 import { Palette16Bit } from '../palette/types';
 
 export type FourAutoAnimationChildFrames = [CROMTile, CROMTile, CROMTile];
@@ -68,20 +68,20 @@ export type CROMTile = {
 export type CROMTileMatrixRow = Array<CROMTile | null>;
 export type CROMTileMatrix = CROMTileMatrixRow[];
 
-export type ICROMGenerator = {
+export type ICROMGenerator<T = any> = {
 	jsonKey: string;
 
-	getCROMSources: (rootDir: string, jsonSpec: Json) => CROMTileMatrix[];
+	getCROMSources: (rootDir: string, input: T) => CROMTileMatrix[];
 
 	setCROMPositions?: (
 		rootDir: string,
-		jsonSpec: Json,
+		input: T,
 		cromTiles: CROMTileMatrix[]
 	) => void;
 
 	getCROMSourceFiles?: (
 		rootDir: string,
-		jsonSpec: Json,
+		input: T,
 		cromTiles: CROMTileMatrix[]
 	) => FileToWrite[];
 };

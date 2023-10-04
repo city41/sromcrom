@@ -3,7 +3,7 @@ import path from 'path';
 import { Palette16Bit } from '../../api/palette/types';
 import { CROMTile, ICROMGenerator } from '../../api/crom/types';
 import { determinePalettes } from '../common/determinePalettes';
-import { FileToWrite, Json } from '../../types';
+import { FileToWrite, JsonInput } from '../../types';
 import { indexCroms } from './indexCroms';
 import { markCromDupes } from './markCromDupes';
 import { positionCroms } from './positionCroms';
@@ -25,11 +25,11 @@ const availableCROMGenerators = Object.keys(generators);
 
 function orchestrate(
 	rootDir: string,
-	resourceJson: Json,
+	input: JsonInput,
 	palettesStartingIndex: number
 ): { palettes: Palette16Bit[]; filesToWrite: FileToWrite[] } {
 	const cromGenerators = availableCROMGenerators
-		.filter((generatorKey) => !!resourceJson[generatorKey])
+		.filter((generatorKey) => !!input[generatorKey as keyof JsonInput])
 		.map((generatorKey) => {
 			return generators[generatorKey];
 		});
@@ -37,7 +37,7 @@ function orchestrate(
 	const cromSourcesResult = cromGenerators.map((generator) => {
 		const tiles = generator.getCROMSources(
 			rootDir,
-			resourceJson[generator.jsonKey] as Json
+			input[generator.jsonKey as keyof JsonInput]
 		);
 
 		return {
@@ -64,11 +64,11 @@ function orchestrate(
 	// croms that must be at a certain location (primarily the eyecatcher) and auto animations
 	// that must be positioned on a multiple of 4 or 8
 	// again done with an in place mutation
-	positionCroms(rootDir, resourceJson, cromSourcesResult);
+	positionCroms(rootDir, input, cromSourcesResult);
 
 	const cromBinaries = emitCromBinaries(
 		allTiles,
-		resourceJson.padCROMFilesTo as number | null | undefined
+		input.padCROMFilesTo as number | null | undefined
 	);
 
 	// TODO: emit more than one pair when croms get too big
@@ -77,11 +77,11 @@ function orchestrate(
 	if (cromBinaries.cOddData.length > 0) {
 		cromFilesToWrite.push(
 			{
-				path: path.resolve(rootDir, resourceJson.romPathRoot + 'c1.c1'),
+				path: path.resolve(rootDir, input.romPathRoot + 'c1.c1'),
 				contents: Buffer.from(new Uint8Array(cromBinaries.cOddData)),
 			},
 			{
-				path: path.resolve(rootDir, resourceJson.romPathRoot + 'c2.c2'),
+				path: path.resolve(rootDir, input.romPathRoot + 'c2.c2'),
 				contents: Buffer.from(new Uint8Array(cromBinaries.cEvenData)),
 			}
 		);
@@ -93,7 +93,7 @@ function orchestrate(
 				return building.concat(
 					sromResult.generator.getCROMSourceFiles(
 						rootDir,
-						resourceJson[sromResult.generator.jsonKey] as Json,
+						input[sromResult.generator.jsonKey as keyof JsonInput],
 						sromResult.tiles
 					)
 				);

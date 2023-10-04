@@ -9,14 +9,7 @@ import { ISROMGenerator, SROMTile, SROMTileMatrix } from '../../api/srom/types';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
 import { SROM_TILE_SIZE_PX } from '../../api/srom/constants';
 import { isEqual } from 'lodash';
-
-type EyeCatcherJSONSpec = {
-	mainLogoImageFile: string;
-	max330MegaImageFile?: string;
-	proGearSpecImageFile?: string;
-	snkLogoImageFile?: string;
-	copyrightCharacter?: string;
-};
+import { EyeCatcherJsonSpec } from '../../types';
 
 type Size = {
 	width: number;
@@ -181,11 +174,12 @@ function isTileForFFBlank(sromTileSources: SROMTileMatrix): boolean {
 	return true;
 }
 
-const eyecatcher: ICROMGenerator & ISROMGenerator = {
+const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
+	ISROMGenerator<EyeCatcherJsonSpec> = {
 	jsonKey: 'eyecatcher',
 
-	getCROMSources(rootDir, jsonSpec) {
-		const { mainLogoImageFile } = jsonSpec as EyeCatcherJSONSpec;
+	getCROMSources(rootDir, input) {
+		const { mainLogoImageFile } = input;
 
 		const cRomImagePath = path.resolve(rootDir, mainLogoImageFile);
 
@@ -216,13 +210,13 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 		return [cromTileSources];
 	},
 
-	getSROMSources(rootDir, jsonSpec) {
+	getSROMSources(rootDir, input) {
 		const {
 			max330MegaImageFile,
 			proGearSpecImageFile,
 			snkLogoImageFile,
-			copyrightCharacter,
-		} = jsonSpec as EyeCatcherJSONSpec;
+			copyrightCharacterImageFile,
+		} = input;
 
 		const sources: SROMTileMatrix[] = [];
 
@@ -258,10 +252,10 @@ const eyecatcher: ICROMGenerator & ISROMGenerator = {
 			);
 		}
 
-		if (copyrightCharacter) {
+		if (copyrightCharacterImageFile) {
 			sources.push(
 				getSROMSource(
-					path.resolve(rootDir, copyrightCharacter),
+					path.resolve(rootDir, copyrightCharacterImageFile),
 					EYECATCHER_COPYRIGHT_SIZE_PX
 				)
 			);

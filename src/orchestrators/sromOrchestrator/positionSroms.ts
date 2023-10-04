@@ -1,5 +1,5 @@
 import { SROMTile } from '../../api/srom/types';
-import { Json } from '../../types';
+import { JsonInput } from '../../types';
 import { GeneratorWithSROMTiles } from './types';
 
 function sortBySromIndex(a: SROMTile, b: SROMTile): number {
@@ -20,7 +20,7 @@ function sortBySromIndex(a: SROMTile, b: SROMTile): number {
 
 function positionSroms(
 	rootDir: string,
-	json: Json,
+	json: JsonInput,
 	inputs: GeneratorWithSROMTiles[]
 ) {
 	inputs.forEach((input) => {

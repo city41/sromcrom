@@ -7,6 +7,7 @@ import { orchestrate as sromOrchestrate } from './orchestrators/sromOrchestrator
 import { orchestrate as paletteOrchestrate } from './orchestrators/paletteOrchestrator';
 import { writeFiles } from './writeFiles';
 import { Palette16Bit } from './api/palette/types';
+import { validateInputJson } from './validateInputJson';
 
 const packageJson = require('../package.json');
 
@@ -28,7 +29,11 @@ if (!options.input) {
 
 // read JSON file
 const inputJsonPath = path.resolve(process.cwd(), options.input);
-const resourceJson = require(inputJsonPath);
+const resourceJson = require(inputJsonPath) as unknown;
+
+if (!validateInputJson(resourceJson)) {
+	process.exit(1);
+}
 
 const rootDir = path.dirname(inputJsonPath);
 

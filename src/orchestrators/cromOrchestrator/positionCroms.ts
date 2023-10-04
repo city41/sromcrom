@@ -1,5 +1,5 @@
 import { CROMTile } from '../../api/crom/types';
-import { Json } from '../../types';
+import { JsonInput } from '../../types';
 import { GeneratorWithCROMTiles } from './types';
 
 function sortByCromIndex(a: CROMTile, b: CROMTile): number {
@@ -20,7 +20,7 @@ function sortByCromIndex(a: CROMTile, b: CROMTile): number {
 
 function positionCroms(
 	rootDir: string,
-	json: Json,
+	json: JsonInput,
 	inputs: GeneratorWithCROMTiles[]
 ) {
 	inputs.forEach((input) => {

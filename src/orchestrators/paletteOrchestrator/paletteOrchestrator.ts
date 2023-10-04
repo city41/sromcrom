@@ -3,22 +3,22 @@ import fs from 'fs';
 import ejs from 'ejs';
 import { Palette16Bit } from '../../api/palette/types';
 import { BLACK_PALETTE } from '../../api/palette/blackPalette';
-import { CodeEmit, FileToWrite, Json } from '../../types';
-
-type PalettesSpec = {
-	codeEmit?: CodeEmit[];
-};
+import { FileToWrite, JsonInput } from '../../types';
 
 function orchestrate(
 	rootDir: string,
-	resourceJson: Json,
+	input: JsonInput,
 	palettes: Palette16Bit[]
 ): { filesToWrite: FileToWrite[] } {
 	const finalPalettes = [BLACK_PALETTE].concat(palettes);
 
-	const { codeEmit } = (resourceJson.palettes ?? {}) as PalettesSpec;
+	if (!input.palettes) {
+		return { filesToWrite: [] };
+	}
 
-	const filesToWrite = (codeEmit ?? []).map<FileToWrite>((codeEmit) => {
+	const { codeEmit } = input.palettes;
+
+	const filesToWrite = (codeEmit?.inputs ?? []).map<FileToWrite>((codeEmit) => {
 		const templatePath = path.resolve(rootDir, codeEmit.template);
 		const template = fs.readFileSync(templatePath).toString();
 

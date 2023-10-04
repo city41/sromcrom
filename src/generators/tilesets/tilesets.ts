@@ -5,20 +5,7 @@ import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContext
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
 import { CROMTileMatrix, ICROMGenerator } from '../../api/crom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
-import { CodeEmit, FileToWrite } from '../../types';
-
-type TilesetInput = {
-	name: string;
-	imageFile: string;
-};
-
-type TilesetsJsonSpec = {
-	inputs: TilesetInput[];
-	codeEmit?: {
-		preEmit?: string;
-		inputs: CodeEmit[];
-	};
-};
+import { FileToWrite, TilesetInput, TilesetsJsonSpec } from '../../types';
 
 type CodeEmitTile = {
 	index: number;
@@ -64,10 +51,10 @@ function createTilesetDataForCodeEmit(
 	});
 }
 
-const tilesets: ICROMGenerator = {
+const tilesets: ICROMGenerator<TilesetsJsonSpec> = {
 	jsonKey: 'tilesets',
-	getCROMSources(rootDir, json) {
-		const { inputs } = json as TilesetsJsonSpec;
+	getCROMSources(rootDir, input) {
+		const { inputs } = input;
 
 		return inputs.map((input) => {
 			const context = getCanvasContextFromImagePath(
@@ -77,8 +64,8 @@ const tilesets: ICROMGenerator = {
 			return extractCromTileSources(context);
 		});
 	},
-	getCROMSourceFiles(rootDir, inputJson, tiles) {
-		const { inputs, codeEmit } = inputJson as TilesetsJsonSpec;
+	getCROMSourceFiles(rootDir, input, tiles) {
+		const { inputs, codeEmit } = input;
 
 		if (!codeEmit) {
 			return [];

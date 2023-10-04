@@ -7,25 +7,12 @@ import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
 import { CROMTileMatrix, ICROMGenerator } from '../../api/crom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { sliceOutFrame } from '../../api/tile/sliceOutFrame';
-import { CodeEmit, FileToWrite } from '../../types';
-
-type CromAnimation = {
-	name: string;
-	imageFile: string;
-	tileWidth?: number;
-	durations?: number;
-	[key: string]: unknown;
-};
-
-type CromAnimationInput = {
-	name: string;
-	animations: CromAnimation[];
-};
-
-type CromAnimationInputJsonSpec = {
-	codeEmit?: CodeEmit[];
-	inputs: CromAnimationInput[];
-};
+import {
+	CromAnimation,
+	CromAnimationInput,
+	CromAnimationsInputJsonSpec,
+	FileToWrite,
+} from '../../types';
 
 type CodeEmitTile = {
 	index: number;
@@ -38,7 +25,7 @@ type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
 type CodeEmitAnimation = {
 	name: string;
 	imageFile: string;
-	durations?: number;
+	duration?: number | null;
 	frames: CodeEmitTileMatrix[];
 	custom: Record<string, unknown>;
 };
@@ -91,7 +78,7 @@ function toCodeEmitAnimations(
 		return {
 			name: animation.name,
 			imageFile: animation.imageFile,
-			durations: animation.durations,
+			duration: animation.duration,
 			frames: frames.map(toCodeEmitTiles),
 			custom: getCustomPropObject(animation),
 		};
@@ -136,11 +123,11 @@ function createAnimationDataForCodeEmit(
 	});
 }
 
-const cromAnimations: ICROMGenerator = {
+const cromAnimations: ICROMGenerator<CromAnimationsInputJsonSpec> = {
 	jsonKey: 'cromAnimations',
 
-	getCROMSources(rootDir, inputJson) {
-		const { inputs } = inputJson as CromAnimationInputJsonSpec;
+	getCROMSources(rootDir, input) {
+		const { inputs } = input;
 
 		const inputAnimations = inputs.map((input) => {
 			return input.animations.reduce<CROMTileMatrix[]>(
@@ -172,8 +159,8 @@ const cromAnimations: ICROMGenerator = {
 		return inputAnimations.flat(1);
 	},
 
-	getCROMSourceFiles(rootDir, inputJson, tiles) {
-		const { inputs, codeEmit } = inputJson as CromAnimationInputJsonSpec;
+	getCROMSourceFiles(rootDir, input, tiles) {
+		const { inputs, codeEmit } = input;
 
 		const animationGroups = createAnimationDataForCodeEmit(
 			rootDir,
@@ -181,7 +168,7 @@ const cromAnimations: ICROMGenerator = {
 			tiles
 		);
 
-		return (codeEmit ?? []).map<FileToWrite>((codeEmit) => {
+		return (codeEmit?.inputs ?? []).map<FileToWrite>((codeEmit) => {
 			const templatePath = path.resolve(rootDir, codeEmit.template);
 			const template = fs.readFileSync(templatePath).toString();
 

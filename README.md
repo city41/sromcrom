@@ -23,9 +23,32 @@ Sromcrom allows you to generate code using ejs templates, so it has almost no as
 - aseprite support
 - alternate palettes
 - frame based srom animations
+- documentation
 
 I would love to expand sromcrom into a full gui application that really lets you manage your graphics. But that is a huge endeavour so who knows if I'll ever do it. Sromcrom's codebase was written with this use case in mind.
 
 ## Status
 
 I am actively using sromcrom to build the Neo Geo game I am working on. It works quite well but I am going to keep building my game for a while and harden sromcrom in the process. Once I am confident sromcrom is stable and meets all use cases, I will write documentation and release a 1.0 version.
+
+# Development
+
+## Publishing
+
+sromcrom uses [semantic versioning](https://semver.org/)
+
+Publishing a new version is done by bumping the version in package.json
+
+```bash
+yarn version
+yarn version v1.22.19
+info Current version: 0.4.0
+question New version: 0.4.1
+info New version: 0.4.1
+Done in 16.19s.
+
+git push
+git push --tags
+```
+
+Once [the Publish action](https://github.com/city41/sromcrom/actions/workflows/publish.yml) notices the version has changed, it will run a build and publish to npm.

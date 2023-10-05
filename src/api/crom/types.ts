@@ -68,6 +68,7 @@ export type CROMTile = {
 export type CROMTileMatrixRow = Array<CROMTile | null>;
 export type CROMTileMatrix = CROMTileMatrixRow[];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ICROMGenerator<T = any> = {
 	jsonKey: string;
 

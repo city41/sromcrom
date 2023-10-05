@@ -43,6 +43,7 @@ export type SROMTile = {
 export type SROMTileMatrixCol = Array<SROMTile | null>;
 export type SROMTileMatrix = SROMTileMatrixCol[];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ISROMGenerator<T = any> = {
 	jsonKey: string;
 

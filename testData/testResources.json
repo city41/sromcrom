@@ -8,5 +8,13 @@
 				"imageFile": "./fixFont.png"
 			}
 		]
+	},
+	"cromImages": {
+		"inputs": [
+			{
+				"name": "fire",
+				"imageFile": "./campFire.png"
+			}
+		]
 	}
 }

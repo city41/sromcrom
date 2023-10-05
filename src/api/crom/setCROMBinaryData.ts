@@ -1,10 +1,10 @@
-import { NodeCanvasRenderingContext2D } from 'canvas';
+import { CanvasRenderingContext2D } from 'canvas';
 import { convertTo16BitColor } from '../palette/convertTo16Bit';
 import { Color24Bit, Palette16Bit } from '../palette/types';
 import { CROMTile } from './types';
 
 function separateIntoCorners(
-	imgContext: NodeCanvasRenderingContext2D
+	imgContext: CanvasRenderingContext2D
 ): Uint8ClampedArray[] {
 	return [
 		// upper right comes first

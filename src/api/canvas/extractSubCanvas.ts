@@ -1,7 +1,7 @@
-import { Canvas, createCanvas, NodeCanvasRenderingContext2D } from 'canvas';
+import { Canvas, createCanvas, CanvasRenderingContext2D } from 'canvas';
 
 export function extractSubCanvas(
-	sourceContext: NodeCanvasRenderingContext2D,
+	sourceContext: CanvasRenderingContext2D,
 	x: number,
 	y: number,
 	width: number,

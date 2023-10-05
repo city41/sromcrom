@@ -1,5 +1,5 @@
 import path from 'path';
-import { createCanvas, NodeCanvasRenderingContext2D } from 'canvas';
+import { createCanvas, CanvasRenderingContext2D } from 'canvas';
 import { TRANSPARENT_24BIT_COLOR } from '../../api/palette/colors';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
@@ -128,8 +128,8 @@ function setSROMPositions(sromTiles: SROMTile[][], positions: number[][]) {
 }
 
 function widenMainImageByOneColumn(
-	inputContext: NodeCanvasRenderingContext2D
-): NodeCanvasRenderingContext2D {
+	inputContext: CanvasRenderingContext2D
+): CanvasRenderingContext2D {
 	const destCanvas = createCanvas(
 		EYECATCHER_MAIN_IMAGE_SIZE_PX.width + CROM_TILE_SIZE_PX,
 		EYECATCHER_MAIN_IMAGE_SIZE_PX.height

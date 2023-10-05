@@ -1,11 +1,11 @@
-import { NodeCanvasRenderingContext2D } from 'canvas';
+import { CanvasRenderingContext2D } from 'canvas';
 import { extractSubCanvas } from '../canvas/extractSubCanvas';
 import { isCanvasBlank } from '../canvas/isCanvasBlank';
 import { SROM_TILE_SIZE_PX } from './constants';
 import type { SROMTileMatrix, SROMTileMatrixCol } from './types';
 
 export function extractSromTileSources(
-	context: NodeCanvasRenderingContext2D
+	context: CanvasRenderingContext2D
 ): SROMTileMatrix {
 	const result: SROMTileMatrix = [];
 

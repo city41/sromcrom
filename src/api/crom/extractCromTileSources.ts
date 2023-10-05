@@ -1,11 +1,11 @@
-import { NodeCanvasRenderingContext2D } from 'canvas';
+import { CanvasRenderingContext2D } from 'canvas';
 import { extractSubCanvas } from '../canvas/extractSubCanvas';
 import { isCanvasBlank } from '../canvas/isCanvasBlank';
 import { CROM_TILE_SIZE_PX } from './constants';
 import type { CROMTileMatrix, CROMTileMatrixRow } from './types';
 
 export function extractCromTileSources(
-	context: NodeCanvasRenderingContext2D
+	context: CanvasRenderingContext2D
 ): CROMTileMatrix {
 	const result: CROMTileMatrix = [];
 

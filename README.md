@@ -31,6 +31,26 @@ I would love to expand sromcrom into a full gui application that really lets you
 
 I am actively using sromcrom to build the Neo Geo game I am working on. It works quite well but I am going to keep building my game for a while and harden sromcrom in the process. Once I am confident sromcrom is stable and meets all use cases, I will write documentation and release a 1.0 version.
 
+# Installation
+
+You need [nodejs](https://nodejs.org/en), at least version 18.
+
+Then...
+
+```bash
+npm install -g @city41/sromcrom
+```
+
+Test it is installed
+
+```bash
+sromcrom -V
+```
+
+# Usage
+
+TODO. In the mean time, I am also writing a [Neo Geo dev book](https://github.com/city41/neo-geo-dev-book) that uses sromcrom throughout.
+
 # Development
 
 ## Publishing

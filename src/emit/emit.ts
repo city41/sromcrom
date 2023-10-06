@@ -3,6 +3,13 @@ import path from 'path';
 import Handlebars from 'handlebars';
 import { CodeEmit, FileToWrite } from "../types";
 
+Handlebars.registerHelper('count', function(a: unknown) {
+    if (!Array.isArray(a)) {
+        throw new Error('count: argument is not an array');
+    }
+    return a.length;
+});
+
 Handlebars.registerHelper('count-flat', function(a: unknown) {
     if (!Array.isArray(a)) {
         throw new Error('count-flat: argument is not an array');

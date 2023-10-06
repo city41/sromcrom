@@ -16,4 +16,4 @@ jobs:
       - uses: JS-DevTools/npm-publish@v2
         with:
           token: ${{ secrets.NPM_TOKEN }}
-          tag: ${{ github.ref == 'refs/head/main' && 'latest' || 'beta' }}
+          tag: ${{ github.ref == 'refs/heads/main' && 'latest' || 'beta' }}

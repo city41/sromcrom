@@ -185,7 +185,6 @@ export type CromAnimationsInputJsonSpec = t.TypeOf<typeof CromAnimationsInputJso
 
 // type JsonInput = {
 // 	romPathRoot: string;
-//  templateEngine?: 'handlebars' | 'ejs';
 // 	padCROMFilesTo?: number;
 // 	palettes?: PalettesSpec;
 // 	eyecatcher?: EyeCatcherJsonSpec;
@@ -199,7 +198,6 @@ export const JsonInput = t.intersection([
 		romPathRoot: t.string
 	}),
 	t.partial({
-		templateEngine: t.union([t.literal('handlebars'), t.literal('ejs'), t.null, t.undefined]),
 		padCROMFilesTo: t.union([t.number, t.null, t.undefined]),
 		palettes: t.union([PalettesSpec, t.null, t.undefined]),
 		eyecatcher: t.union([EyeCatcherJsonSpec, t.null, t.undefined]),

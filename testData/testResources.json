@@ -1,6 +1,5 @@
 {
 	"romPathRoot": "./out/test-",
-	"templateEngine": "handlebars",
 	"padCROMFilesTo": 1048576,
 	"sromImages": {
 		"inputs": [

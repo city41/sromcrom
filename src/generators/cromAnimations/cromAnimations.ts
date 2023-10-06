@@ -1,6 +1,4 @@
-import fs from 'fs';
 import path from 'path';
-import ejs from 'ejs';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
@@ -10,9 +8,9 @@ import { sliceOutFrame } from '../../api/tile/sliceOutFrame';
 import {
 	CromAnimation,
 	CromAnimationInput,
-	CromAnimationsInputJsonSpec,
-	FileToWrite,
+	CromAnimationsInputJsonSpec
 } from '../../types';
+import { emit } from '../../emit/emit';
 
 type CodeEmitTile = {
 	index: number;
@@ -168,17 +166,7 @@ const cromAnimations: ICROMGenerator<CromAnimationsInputJsonSpec> = {
 			tiles
 		);
 
-		return (codeEmit?.inputs ?? []).map<FileToWrite>((codeEmit) => {
-			const templatePath = path.resolve(rootDir, codeEmit.template);
-			const template = fs.readFileSync(templatePath).toString();
-
-			const code = ejs.render(template, { animationGroups });
-
-			return {
-				path: path.resolve(rootDir, codeEmit.dest),
-				contents: Buffer.from(code),
-			};
-		});
+		return emit(rootDir, codeEmit, { animationGroups });
 	},
 };
 

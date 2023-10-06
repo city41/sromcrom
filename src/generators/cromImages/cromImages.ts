@@ -1,6 +1,4 @@
-import fs from 'fs';
 import path from 'path';
-import ejs from 'ejs';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
 import { ICROMGenerator, CROMTile, CROMTileMatrix } from '../../api/crom/types';
@@ -9,9 +7,9 @@ import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { sliceOutFrame } from '../../api/tile/sliceOutFrame';
 import {
 	CromImageInput,
-	CromImagesInputJsonSpec,
-	FileToWrite,
+	CromImagesInputJsonSpec
 } from '../../types';
+import { emit } from '../../emit/emit';
 
 type CodeEmitTile = {
 	index: number;
@@ -142,17 +140,7 @@ const cromImages: ICROMGenerator<CromImagesInputJsonSpec> = {
 
 		const images = createImageDataForCodeEmit(inputs, tiles);
 
-		return (codeEmit?.inputs ?? []).map<FileToWrite>((codeEmit) => {
-			const templatePath = path.resolve(rootDir, codeEmit.template);
-			const template = fs.readFileSync(templatePath).toString();
-
-			const code = ejs.render(template, { images });
-
-			return {
-				path: path.resolve(rootDir, codeEmit.dest),
-				contents: Buffer.from(code),
-			};
-		});
+		return emit(rootDir, codeEmit, { images });
 	},
 };
 

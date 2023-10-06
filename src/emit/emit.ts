@@ -3,7 +3,10 @@ import path from 'path';
 import Handlebars from 'handlebars';
 import { CodeEmit, FileToWrite } from "../types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+Handlebars.registerHelper('p', function(a: unknown) {
+    return String(a);
+});
+
 Handlebars.registerHelper('flat', function(a: unknown) {
     if (!Array.isArray(a)) {
         throw new Error('flat: argument is not an array');

@@ -3,18 +3,18 @@ import path from 'path';
 import Handlebars from 'handlebars';
 import { CodeEmit, FileToWrite } from "../types";
 
-Handlebars.registerHelper('count', function(a: unknown) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+Handlebars.registerHelper('count', function(a: unknown, options: any) {
     if (!Array.isArray(a)) {
         throw new Error('count: argument is not an array');
     }
-    return a.length;
-});
+    console.log('options', JSON.stringify(options));
 
-Handlebars.registerHelper('count-flat', function(a: unknown) {
-    if (!Array.isArray(a)) {
-        throw new Error('count-flat: argument is not an array');
+    if (options?.hash?.flatten) {
+        return a.flat(Infinity).length;
+    } else {
+        return a.length;
     }
-    return a.flat(Infinity).length;
 });
 
 function emit(rootDir: string, codeEmit: CodeEmit | null | undefined, renderData: Record<string, unknown>): FileToWrite[] {

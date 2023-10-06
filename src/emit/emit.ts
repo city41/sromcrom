@@ -3,6 +3,14 @@ import path from 'path';
 import Handlebars from 'handlebars';
 import { CodeEmit, FileToWrite } from "../types";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+Handlebars.registerHelper('flat', function(a: unknown) {
+    if (!Array.isArray(a)) {
+        throw new Error('flat: argument is not an array');
+    }
+    return a.flat(Infinity);
+});
+
 function emit(rootDir: string, codeEmit: CodeEmit | null | undefined, renderData: Record<string, unknown>): FileToWrite[] {
     return (codeEmit?.inputs ?? []).map<FileToWrite>((codeEmit) => {
         const templatePath = path.resolve(rootDir, codeEmit.template);

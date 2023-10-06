@@ -3,15 +3,11 @@ import path from 'path';
 import Handlebars from 'handlebars';
 import { CodeEmit, FileToWrite } from "../types";
 
-Handlebars.registerHelper('p', function(a: unknown) {
-    return String(a);
-});
-
-Handlebars.registerHelper('flat', function(a: unknown) {
+Handlebars.registerHelper('count-flat', function(a: unknown) {
     if (!Array.isArray(a)) {
-        throw new Error('flat: argument is not an array');
+        throw new Error('count-flat: argument is not an array');
     }
-    return a.flat(Infinity);
+    return a.flat(Infinity).length;
 });
 
 function emit(rootDir: string, codeEmit: CodeEmit | null | undefined, renderData: Record<string, unknown>): FileToWrite[] {

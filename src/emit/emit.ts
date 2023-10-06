@@ -8,7 +8,6 @@ Handlebars.registerHelper('count', function(a: unknown, options: any) {
     if (!Array.isArray(a)) {
         throw new Error('count: argument is not an array');
     }
-    console.log('options', JSON.stringify(options));
 
     if (options?.hash?.flatten) {
         return a.flat(Infinity).length;

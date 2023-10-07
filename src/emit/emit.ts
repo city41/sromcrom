@@ -37,19 +37,54 @@ Handlebars.registerHelper('toUpperCase', (a: unknown) => {
     return a.toUpperCase();
 });
 
-Handlebars.registerHelper('mul', (a: unknown, b: unknown) => {
+Handlebars.registerHelper('mul', (...rawNums: unknown[]) => {
+    const nums = rawNums.map(rn => Number(rn));
+
+    if (nums.some(n => isNaN(n))) {
+        throw new Error(`mul: arguments must be numbers, received: ${JSON.stringify(rawNums)}`);
+    }
+
+
+    return nums.reduce<number>((accum, n) => {
+        return accum * n;
+    }, 1);
+});
+
+Handlebars.registerHelper('add', (...rawNums: unknown[]) => {
+    const nums = rawNums.map(rn => Number(rn));
+
+    if (nums.some(n => isNaN(n))) {
+        throw new Error(`add: arguments must be numbers, received: ${JSON.stringify(rawNums)}`);
+    }
+
+
+    return nums.reduce<number>((accum, n) => {
+        return accum + n;
+    }, 0);
+});
+
+Handlebars.registerHelper('div', (a: unknown, b: unknown) => {
     const an = Number(a);
     const bn = Number(b);
 
-    if (isNaN(an)) {
-        throw new Error(`mul: first argument should be a number, received: ${JSON.stringify(a)}`);
+    if (isNaN(an) || isNaN(bn)) {
+        throw new Error(`div: arguments must be numbers, received: ${JSON.stringify(a)}, ${JSON.stringify(b)}`);
     }
 
-    if (isNaN(bn)) {
-        throw new Error(`mul: second argument should be a number, received: ${JSON.stringify(b)}`);
+
+    return an / bn;
+});
+
+Handlebars.registerHelper('sub', (a: unknown, b: unknown) => {
+    const an = Number(a);
+    const bn = Number(b);
+
+    if (isNaN(an) || isNaN(bn)) {
+        throw new Error(`sub: arguments must be numbers, received: ${JSON.stringify(a)}, ${JSON.stringify(b)}`);
     }
 
-    return an * bn;
+
+    return an - bn;
 });
 
 Handlebars.registerHelper('hex', (a: unknown) => {

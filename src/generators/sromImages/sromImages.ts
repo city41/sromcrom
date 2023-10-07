@@ -1,11 +1,10 @@
-import fs from 'fs';
 import path from 'path';
-import ejs from 'ejs';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
 import { ISROMGenerator, SROMTileMatrix } from '../../api/srom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
-import { FileToWrite, SromImageInput, SromImagesJsonSpec } from '../../types';
+import { SromImageInput, SromImagesJsonSpec } from '../../types';
+import { emit } from '../../emit/emit';
 
 type CodeEmitTile = {
 	index: number;
@@ -70,17 +69,7 @@ const sromImages: ISROMGenerator<SromImagesJsonSpec> = {
 
 		const images = createImageDataForCodeEmit(inputs, tiles);
 
-		return (codeEmit?.inputs ?? []).map<FileToWrite>((codeEmit) => {
-			const templatePath = path.resolve(rootDir, codeEmit.template);
-			const template = fs.readFileSync(templatePath).toString();
-
-			const code = ejs.render(template, { images });
-
-			return {
-				path: path.resolve(rootDir, codeEmit.dest),
-				contents: Buffer.from(code),
-			};
-		});
+		return emit(rootDir, codeEmit, { images });
 	},
 };
 

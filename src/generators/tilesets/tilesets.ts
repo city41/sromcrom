@@ -1,11 +1,10 @@
 import path from 'path';
-import fs from 'fs';
-import ejs from 'ejs';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
 import { CROMTileMatrix, ICROMGenerator } from '../../api/crom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
-import { FileToWrite, TilesetInput, TilesetsJsonSpec } from '../../types';
+import { TilesetInput, TilesetsJsonSpec } from '../../types';
+import { emit } from '../../emit/emit';
 
 type CodeEmitTile = {
 	index: number;
@@ -71,7 +70,7 @@ const tilesets: ICROMGenerator<TilesetsJsonSpec> = {
 			return [];
 		}
 
-		const { preEmit, inputs: codeEmits } = codeEmit;
+		const { preEmit } = codeEmit;
 
 		const tilesets = createTilesetDataForCodeEmit(inputs, tiles);
 
@@ -85,17 +84,7 @@ const tilesets: ICROMGenerator<TilesetsJsonSpec> = {
 			renderData = { tilesets };
 		}
 
-		return (codeEmits ?? []).map<FileToWrite>((codeEmit) => {
-			const templatePath = path.resolve(rootDir, codeEmit.template);
-			const template = fs.readFileSync(templatePath).toString();
-
-			const code = ejs.render(template, renderData);
-
-			return {
-				path: path.resolve(rootDir, codeEmit.dest),
-				contents: Buffer.from(code),
-			};
-		});
+		return emit(rootDir, codeEmit, renderData);
 	},
 };
 

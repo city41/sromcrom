@@ -4,7 +4,7 @@ A tool for converting modern graphic formats into the binary rom formats needed 
 
 Sromcrom understands all srom and crom limitations and features, such as eyecatcher and other srom specifics, as well as crom auto animations.
 
-Sromcrom allows you to generate code using ejs or handlebar templates, so it has almost no assumptions about how your codebase is. You should be able to adopt sromcrom to emit any kind of code to meet your needs, in any language (ie C, assembly, C++, etc).
+Sromcrom allows you to generate code using handlebars templates, so it has almost no assumptions about how your codebase is. You should be able to adopt sromcrom to emit any kind of code to meet your needs, in any language (ie C, assembly, C++, etc).
 
 ## Features
 
@@ -16,7 +16,7 @@ Sromcrom allows you to generate code using ejs or handlebar templates, so it has
 - frame based crom animations
 - merging of palettes
 - ensures the first color of palette zero is the required black
-- code generation via ejs or handlebar templates
+- code generation via handlebars templates
 
 ### Features to come
 

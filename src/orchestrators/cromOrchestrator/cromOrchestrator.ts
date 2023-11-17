@@ -2,7 +2,7 @@ import path from 'path';
 
 import { Palette16Bit } from '../../api/palette/types';
 import { CROMTile, ICROMGenerator } from '../../api/crom/types';
-import { determinePalettes } from '../common/determinePalettes';
+import { determinePalettesToEmit } from '../common/determinePalettesToEmit';
 import { FileToWrite, JsonInput } from '../../types';
 import { indexCroms } from './indexCroms';
 import { markCromDupes } from './markCromDupes';
@@ -27,7 +27,7 @@ function orchestrate(
 	rootDir: string,
 	input: JsonInput,
 	palettesStartingIndex: number
-): { palettes: Palette16Bit[]; filesToWrite: FileToWrite[] } {
+): { palettesToEmit: Palette16Bit[]; filesToWrite: FileToWrite[] } {
 	const cromGenerators = availableCROMGenerators
 		.filter((generatorKey) => !!input[generatorKey as keyof JsonInput])
 		.map((generatorKey) => {
@@ -51,7 +51,10 @@ function orchestrate(
 		.flat(3)
 		.filter((t) => t !== null) as CROMTile[];
 
-	const finalPalettes = determinePalettes(allTiles, palettesStartingIndex);
+	const finalPalettes = determinePalettesToEmit(
+		allTiles,
+		palettesStartingIndex
+	);
 
 	// convert the 24bit rgb source canvases into actual CROM Tiles with indexed data
 	// making sure to keep associating a tile with the generator that initially provided it
@@ -105,7 +108,7 @@ function orchestrate(
 	);
 
 	return {
-		palettes: finalPalettes,
+		palettesToEmit: finalPalettes,
 		filesToWrite: cromFilesToWrite.concat(otherFilesToWrite),
 	};
 }

@@ -4,12 +4,15 @@ import { TRANSPARENT_24BIT_COLOR } from '../../api/palette/colors';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
-import type { CROMTile, ICROMGenerator } from '../../api/crom/types';
+import type { ICROMGenerator } from '../../api/crom/types';
 import { ISROMGenerator, SROMTile, SROMTileMatrix } from '../../api/srom/types';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
 import { SROM_TILE_SIZE_PX } from '../../api/srom/constants';
 import { isEqual } from 'lodash';
 import { EyeCatcherJsonSpec } from '../../types';
+import { Palette16Bit } from '../../api/palette/types';
+import { get24BitPalette } from '../../api/palette/get24BitPalette';
+import { convertTo16BitPalette } from '../../api/palette/convertTo16Bit';
 
 type Size = {
 	width: number;
@@ -91,13 +94,23 @@ const COMPANY_LOGO_TILE_POSITIONS = [
 
 const COPYRIGHT_TILE_POSITIONS = [[0x7b]];
 
-const EMPTY_IMAGE_ERROR_MESSAGE =
-	'eyecatcher images can not have any empty tiles. If the tile should be blank, fill it with magenta.';
+// as they eyecatcher animates the palette changes, but this is the palette in its final form.
+// all parts of the eyecatcher use this same palette. Color 5 is "SNK blue"
+const EYECATCHER_PALETTE: Palette16Bit = [
+	// the palette was altered for sromcrom, the first color is now magenta instead of 0x0000. That way all magenta pixels
+	// in source eyecatcher images get mapped to index zero
+	0x8000,
+	0x0fff, 0x0ddd, 0x0aaa, 0x7555, 0x306e, 0x0000, 0x0000, 0x0000, 0x0000,
+	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+];
 
-function hasEmpty<T extends SROMTile | CROMTile | null>(
-	matrix: T[][]
-): boolean {
-	return matrix.flat(3).some((t) => t === null);
+function matchesEyecatcherPalette(context: CanvasRenderingContext2D): boolean {
+	const palette24 = get24BitPalette(context.canvas);
+	const palette16 = convertTo16BitPalette(palette24);
+
+	return palette16.every((p16) => {
+		return EYECATCHER_PALETTE.includes(p16);
+	});
 }
 
 function getSROMSource(imagePath: string, expectedSize: Size): SROMTileMatrix {
@@ -106,17 +119,28 @@ function getSROMSource(imagePath: string, expectedSize: Size): SROMTileMatrix {
 
 	if (width !== expectedSize.width || height !== expectedSize.height) {
 		throw new Error(
-			`eyecatcher image, ${imagePath}, is wrong size. Should be ${expectedSize.width}x${expectedSize.height}, but is ${width}x${height}`
+			`eyecatcher image, ${imagePath}, is the wrong size. Should be ${expectedSize.width}x${expectedSize.height}, but is ${width}x${height}`
 		);
 	}
 
-	const sromSource = extractSromTileSources(context);
-
-	if (hasEmpty(sromSource)) {
-		throw new Error(EMPTY_IMAGE_ERROR_MESSAGE);
+	if (!matchesEyecatcherPalette(context)) {
+		throw new Error(
+			`The eyecatcher image, ${imagePath}, cannot be rendered with the system eyecatcher palette`
+		);
 	}
 
-	return extractSromTileSources(context);
+	const sromImage = extractSromTileSources(context);
+
+	sromImage.forEach((col) => {
+		col.forEach((tile) => {
+			if (tile) {
+				tile.palette = EYECATCHER_PALETTE;
+				tile.emitPalette = false;
+			}
+		});
+	});
+
+	return sromImage;
 }
 
 function setSROMPositions(sromTiles: SROMTile[][], positions: number[][]) {
@@ -191,7 +215,7 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 			height !== EYECATCHER_MAIN_IMAGE_SIZE_PX.height
 		) {
 			throw new Error(
-				`eyecatcher image is wrong size. Should be ${EYECATCHER_MAIN_IMAGE_SIZE_PX.width}x${EYECATCHER_MAIN_IMAGE_SIZE_PX.height}, but is ${width}x${height}`
+				`The eyecatcher main logo image is the wrong size. Should be ${EYECATCHER_MAIN_IMAGE_SIZE_PX.width}x${EYECATCHER_MAIN_IMAGE_SIZE_PX.height}, but is ${width}x${height}`
 			);
 		}
 
@@ -201,11 +225,22 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 		// tiles wide, then appending a blank tile column to the end
 		const finalContext = widenMainImageByOneColumn(context);
 
+		if (!matchesEyecatcherPalette(finalContext)) {
+			throw new Error(
+				'The eyecatcher main logo image cannot be rendered with the system eyecatcher palette'
+			);
+		}
+
 		const cromTileSources = extractCromTileSources(finalContext);
 
-		if (hasEmpty(cromTileSources)) {
-			throw new Error(EMPTY_IMAGE_ERROR_MESSAGE);
-		}
+		cromTileSources.forEach((row) => {
+			row.forEach((tile) => {
+				if (tile) {
+					tile.palette = EYECATCHER_PALETTE;
+					tile.emitPalette = false;
+				}
+			});
+		});
 
 		return [cromTileSources];
 	},
@@ -238,7 +273,7 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 
 			if (!isTileForFFBlank(proGearSource)) {
 				console.warn(
-					'proGearSpecImageFile: the tile that will be placed at 0xff in the SROM binary (at {64px,0px} in the image) is not blank or is empty. That tile will be drawn over the entire fix layer in many situations. It should be an entirely magenta tile.'
+					'proGearSpecImageFile: the tile that will be placed at 0xff in the SROM binary (at {64px,0px} in the image) is not fully blank. That tile will be drawn over the entire fix layer in many situations. It should be an entirely magenta tile.'
 				);
 			}
 		}
@@ -290,6 +325,7 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 
 	setSROMPositions(_rootDir, _json, sromTiles) {
 		// TODO: use the json to figure out which images are present
+		// but this approach is safe because sromTiles will only contain eyecatcher tiles
 
 		const max330Image = sromTiles.find((i) => {
 			return (

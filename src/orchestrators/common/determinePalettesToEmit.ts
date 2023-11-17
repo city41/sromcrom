@@ -1,15 +1,9 @@
-import { Canvas } from 'canvas';
 import { Palette16Bit } from '../../api/palette/types';
 import { BLACK16, TRANSPARENT_16BIT_COLOR } from '../../api/palette/colors';
 import { get24BitPalette } from '../../api/palette/get24BitPalette';
 import { convertTo16BitPalette } from '../../api/palette/convertTo16Bit';
 import uniq from 'lodash/uniq';
-
-type BaseTile = {
-	canvasSource: Canvas;
-	palette?: Palette16Bit;
-	paletteIndex?: number;
-};
+import { BaseTile } from '../../types';
 
 // a string in the form i-i-i-... where i is a 16 bit packed color
 // way too complex and tedious to model as a template literal
@@ -112,7 +106,7 @@ function mergePalettes(inputPaletteMap: PaletteMap): PaletteMap {
 function padTo16Values(palette: Palette16Bit): Palette16Bit {
 	if (palette.length > 16) {
 		throw new Error(
-			`determinePalettes#patTo16Values: a palette has more than 16 values: ${palette.length}`
+			`determinePalettes#padTo16Values: a palette has more than 16 values: ${palette.length}`
 		);
 	}
 
@@ -138,12 +132,12 @@ function findPalette(tile: BaseTile, paletteMap: PaletteMap): Palette16Bit {
 }
 
 function assignPalettes(
-	allTiles: Array<BaseTile | null>,
+	inputTiles: Array<BaseTile | null>,
 	paletteMap: PaletteMap,
 	finalPalettes: Palette16Bit[],
 	paletteStartIndex: number
 ) {
-	allTiles.forEach((tile) => {
+	inputTiles.forEach((tile) => {
 		if (!tile) {
 			return;
 		}
@@ -162,14 +156,21 @@ function assignPalettes(
 	});
 }
 
-function determinePalettes<TTile extends BaseTile | null>(
+function determinePalettesToEmit<TTile extends BaseTile | null>(
 	allTiles: TTile[],
 	paletteStartIndex: number
 ): Palette16Bit[] {
+	// if a tile is saying don't emit my palette, then it does not need to participate in this.
+	// these are primarily eyecatcher tiles, which use system palettes
+	const tilesThatWillEmitTheirPalettes = allTiles.filter(
+		// if emitPalette is not defined, it defaults to true
+		(t) => !t || typeof t.emitPalette === 'undefined' || t.emitPalette
+	);
+
 	// convert the 1d array of sources into a palette map,
 	// which maps from a 16 bit palette to all of the sources
 	// that can use it
-	const paletteMap = buildPaletteMap(allTiles);
+	const paletteMap = buildPaletteMap(tilesThatWillEmitTheirPalettes);
 
 	// it is likely palettes can get merged. say two sources each only have
 	// 8 colors in them, then we can merge those 8 colors into one palette,
@@ -182,9 +183,9 @@ function determinePalettes<TTile extends BaseTile | null>(
 	const finalPalettesNotYetPadded = Array.from(mergedPaletteMap.keys());
 
 	// for each generator, convert their sources into sources-with-palettes
-	// later these sources-with-palettes will be used to build the actual CROM data
+	// later these sources-with-palettes will be used to build the actual CROM/SROM data
 	assignPalettes(
-		allTiles,
+		tilesThatWillEmitTheirPalettes,
 		mergedPaletteMap,
 		finalPalettesNotYetPadded,
 		paletteStartIndex
@@ -193,4 +194,4 @@ function determinePalettes<TTile extends BaseTile | null>(
 	return finalPalettesNotYetPadded.map(padTo16Values);
 }
 
-export { determinePalettes };
+export { determinePalettesToEmit };

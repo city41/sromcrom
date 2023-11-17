@@ -1,6 +1,5 @@
-import { Canvas } from 'canvas';
 import { FileToWrite } from '../../types';
-import { Palette16Bit } from '../palette/types';
+import { BaseTile } from '../tile/markDupes';
 
 export type FourAutoAnimationChildFrames = [CROMTile, CROMTile, CROMTile];
 export type EightAutoAnimationChildFrames = [
@@ -10,30 +9,10 @@ export type EightAutoAnimationChildFrames = [
 	CROMTile,
 	CROMTile,
 	CROMTile,
-	CROMTile
+	CROMTile,
 ];
 
-export type CROMTile = {
-	canvasSource: Canvas;
-
-	/**
-	 * The sixteen bit palette that got assigned to this source.
-	 * The source will use this to figure out how to convert into
-	 * the indexed format
-	 */
-	palette?: Palette16Bit;
-
-	/**
-	 * Which palette this is in the final 16bit palette array output
-	 */
-	paletteIndex?: number;
-
-	/**
-	 * If this tile is a duplicate of another, then
-	 * this points to the other tile it duplicates
-	 */
-	duplicateOf?: CROMTile;
-
+export type CROMTile = BaseTile & {
 	/**
 	 * If this tile is a child animation frame of an
 	 * auto animation, this points to the master tile

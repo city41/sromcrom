@@ -11,15 +11,15 @@ import {
 	WHITE24,
 } from '../../../api/palette/colors';
 import { getTestCanvas } from '../../../testUtil';
-import { determinePalettes } from '../determinePalettes';
+import { determinePalettesToEmit } from '../determinePalettesToEmit';
 
-describe('determinePalettes', function () {
-	it('should determine the palette for a single source', function () {
+describe('determinePalettesToEmit', function () {
+	it('should determine the palette to emit for a single source', function () {
 		const tile: CROMTile = {
 			canvasSource: getTestCanvas(BLACK24, RED24),
 		};
 
-		const result = determinePalettes([tile], 0);
+		const result = determinePalettesToEmit([tile], 0);
 
 		const expectedSourcePalette = [MAGENTA16, BLACK16, RED16];
 
@@ -37,7 +37,7 @@ describe('determinePalettes', function () {
 			canvasSource: getTestCanvas(BLACK24, RED24),
 		};
 
-		determinePalettes([tile], 33);
+		determinePalettesToEmit([tile], 33);
 
 		expect(tile.paletteIndex).toEqual(33);
 	});
@@ -53,7 +53,7 @@ describe('determinePalettes', function () {
 			canvasSource: getTestCanvas(BLACK24, RED24, GREEN24),
 		};
 
-		const result = determinePalettes([tile1, tile2, tile3], 33);
+		const result = determinePalettesToEmit([tile1, tile2, tile3], 33);
 
 		const expectedPalette = [MAGENTA16, GREEN16, WHITE16, BLACK16, RED16];
 

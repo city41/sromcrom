@@ -1,4 +1,41 @@
 import * as t from 'io-ts';
+import { Canvas } from 'canvas';
+import { Palette16Bit } from './api/palette/types';
+
+// these don't use io-ts as they are not part of the input
+export type FileToWrite = {
+	path: string;
+	contents: Buffer;
+};
+
+export type BaseTile = {
+	/**
+	 * the modern png/aseprite source for this tile,
+	 */
+	canvasSource: Canvas;
+
+	/**
+	 * The sixteen bit palette that got assigned to this source.
+	 * The source will use this to figure out how to convert into
+	 * the indexed format
+	 */
+	palette?: Palette16Bit;
+
+	/**
+	 * If set, determines whether this palette should be included into the emitted
+	 * palette data. If not set the default is true.
+	 *
+	 * This is used by the eyecatcher as those images use predefined palettes already on the system
+	 */
+	emitPalette?: boolean;
+
+	/**
+	 * Which palette this is in the final 16bit palette array output
+	 */
+	paletteIndex?: number;
+
+	duplicateOf?: BaseTile;
+};
 
 // keep the hand written types as comments since I am new to io-ts
 
@@ -11,31 +48,26 @@ import * as t from 'io-ts';
 // };
 const CodeEmit = t.intersection([
 	t.partial({
-		preEmit: t.union([t.string, t.null, t.undefined])
+		preEmit: t.union([t.string, t.null, t.undefined]),
 	}),
 	t.type({
-		inputs: t.array(t.type({
-			template: t.string,
-			dest: t.string
-		}))
-	})
+		inputs: t.array(
+			t.type({
+				template: t.string,
+				dest: t.string,
+			})
+		),
+	}),
 ]);
 export type CodeEmit = t.TypeOf<typeof CodeEmit>;
 
-// this does not use io-ts as it's not part of the input
-export type FileToWrite = {
-	path: string;
-	contents: Buffer;
-};
-
 // type PalettesSpec = {
-	// codeEmit?: CodeEmit;
+// codeEmit?: CodeEmit;
 // };
 const PalettesSpec = t.partial({
-	codeEmit: t.union([CodeEmit, t.null, t.undefined])
+	codeEmit: t.union([CodeEmit, t.null, t.undefined]),
 });
 export type PalettesSpec = t.TypeOf<typeof PalettesSpec>;
-
 
 // type EyeCatcherJsonSpec = {
 // 	mainLogoImageFile: string;
@@ -46,13 +78,13 @@ export type PalettesSpec = t.TypeOf<typeof PalettesSpec>;
 // };
 const EyeCatcherJsonSpec = t.intersection([
 	t.type({
-		mainLogoImageFile: t.string
+		mainLogoImageFile: t.string,
 	}),
 	t.partial({
 		max330MegaImageFile: t.union([t.string, t.null, t.undefined]),
 		proGearSpecImageFile: t.union([t.string, t.null, t.undefined]),
 		snkLogoImageFile: t.union([t.string, t.null, t.undefined]),
-		copyrightCharacterImageFile: t.union([t.string, t.null, t.undefined])
+		copyrightCharacterImageFile: t.union([t.string, t.null, t.undefined]),
 	}),
 ]);
 export type EyeCatcherJsonSpec = t.TypeOf<typeof EyeCatcherJsonSpec>;
@@ -63,7 +95,7 @@ export type EyeCatcherJsonSpec = t.TypeOf<typeof EyeCatcherJsonSpec>;
 // };
 const SromImageInput = t.type({
 	name: t.string,
-	imageFile: t.string
+	imageFile: t.string,
 });
 export type SromImageInput = t.TypeOf<typeof SromImageInput>;
 
@@ -73,11 +105,11 @@ export type SromImageInput = t.TypeOf<typeof SromImageInput>;
 // };
 const SromImagesJsonSpec = t.intersection([
 	t.partial({
-		codeEmit: t.union([CodeEmit, t.null, t.undefined])
+		codeEmit: t.union([CodeEmit, t.null, t.undefined]),
 	}),
 	t.type({
-		inputs: t.array(SromImageInput)
-	})
+		inputs: t.array(SromImageInput),
+	}),
 ]);
 export type SromImagesJsonSpec = t.TypeOf<typeof SromImagesJsonSpec>;
 
@@ -87,7 +119,7 @@ export type SromImagesJsonSpec = t.TypeOf<typeof SromImagesJsonSpec>;
 // };
 const TilesetInput = t.type({
 	name: t.string,
-	imageFile: t.string
+	imageFile: t.string,
 });
 export type TilesetInput = t.TypeOf<typeof TilesetInput>;
 
@@ -97,11 +129,11 @@ export type TilesetInput = t.TypeOf<typeof TilesetInput>;
 // };
 const TilesetsJsonSpec = t.intersection([
 	t.partial({
-		codeEmit: t.union([CodeEmit, t.null, t.undefined])
+		codeEmit: t.union([CodeEmit, t.null, t.undefined]),
 	}),
 	t.type({
-		inputs: t.array(TilesetInput)
-	})
+		inputs: t.array(TilesetInput),
+	}),
 ]);
 export type TilesetsJsonSpec = t.TypeOf<typeof TilesetsJsonSpec>;
 
@@ -115,13 +147,13 @@ export type TilesetsJsonSpec = t.TypeOf<typeof TilesetsJsonSpec>;
 const CromImageInput = t.intersection([
 	t.type({
 		name: t.string,
-		imageFile: t.string
+		imageFile: t.string,
 	}),
 	t.partial({
 		tileWidth: t.union([t.number, t.null, t.undefined]),
 		autoAnimation: t.union([t.number, t.null, t.undefined]),
 	}),
-	t.UnknownRecord
+	t.UnknownRecord,
 ]);
 export type CromImageInput = t.TypeOf<typeof CromImageInput>;
 
@@ -131,11 +163,11 @@ export type CromImageInput = t.TypeOf<typeof CromImageInput>;
 // };
 const CromImagesInputJsonSpec = t.intersection([
 	t.partial({
-		codeEmit: t.union([CodeEmit, t.null, t.undefined])
+		codeEmit: t.union([CodeEmit, t.null, t.undefined]),
 	}),
 	t.type({
-		inputs: t.array(CromImageInput)
-	})
+		inputs: t.array(CromImageInput),
+	}),
 ]);
 export type CromImagesInputJsonSpec = t.TypeOf<typeof CromImagesInputJsonSpec>;
 
@@ -149,13 +181,13 @@ export type CromImagesInputJsonSpec = t.TypeOf<typeof CromImagesInputJsonSpec>;
 const CromAnimation = t.intersection([
 	t.type({
 		name: t.string,
-		imageFile: t.string
+		imageFile: t.string,
 	}),
 	t.partial({
 		tileWidth: t.union([t.number, t.null, t.undefined]),
 		duration: t.union([t.number, t.null, t.undefined]),
 	}),
-	t.UnknownRecord
+	t.UnknownRecord,
 ]);
 export type CromAnimation = t.TypeOf<typeof CromAnimation>;
 
@@ -165,7 +197,7 @@ export type CromAnimation = t.TypeOf<typeof CromAnimation>;
 // };
 const CromAnimationInput = t.type({
 	name: t.string,
-	animations: t.array(CromAnimation)
+	animations: t.array(CromAnimation),
 });
 export type CromAnimationInput = t.TypeOf<typeof CromAnimationInput>;
 
@@ -175,13 +207,15 @@ export type CromAnimationInput = t.TypeOf<typeof CromAnimationInput>;
 // };
 const CromAnimationsInputJsonSpec = t.intersection([
 	t.partial({
-		codeEmit: t.union([CodeEmit, t.null, t.undefined])
+		codeEmit: t.union([CodeEmit, t.null, t.undefined]),
 	}),
 	t.type({
-		inputs: t.array(CromAnimationInput)
-	})
+		inputs: t.array(CromAnimationInput),
+	}),
 ]);
-export type CromAnimationsInputJsonSpec = t.TypeOf<typeof CromAnimationsInputJsonSpec>;
+export type CromAnimationsInputJsonSpec = t.TypeOf<
+	typeof CromAnimationsInputJsonSpec
+>;
 
 // type JsonInput = {
 // 	romPathRoot: string;
@@ -195,7 +229,7 @@ export type CromAnimationsInputJsonSpec = t.TypeOf<typeof CromAnimationsInputJso
 // };
 export const JsonInput = t.intersection([
 	t.type({
-		romPathRoot: t.string
+		romPathRoot: t.string,
 	}),
 	t.partial({
 		padCROMFilesTo: t.union([t.number, t.null, t.undefined]),
@@ -205,6 +239,6 @@ export const JsonInput = t.intersection([
 		tilesets: t.union([TilesetsJsonSpec, t.null, t.undefined]),
 		cromImages: t.union([CromImagesInputJsonSpec, t.null, t.undefined]),
 		cromAnimations: t.union([CromAnimationsInputJsonSpec, t.null, t.undefined]),
-	})
+	}),
 ]);
 export type JsonInput = t.TypeOf<typeof JsonInput>;

@@ -22,10 +22,10 @@ export function get24BitPalette(canvas: Canvas): Palette24Bit {
 	// make sure all palettes have magenta/transparent
 	// first remove it if present
 	colors = colors.filter((c) => !isEqual(c, TRANSPARENT_24BIT_COLOR));
-	// make sure all colors are unique
-	colors = uniqBy(colors, raw24BitColorToString) as Palette24Bit;
 	// then add transparent, ensuring it stays in the front
 	colors.unshift(TRANSPARENT_24BIT_COLOR);
+	// make sure all colors are unique
+	colors = uniqBy(colors, raw24BitColorToString) as Palette24Bit;
 
 	return colors as Palette24Bit;
 }

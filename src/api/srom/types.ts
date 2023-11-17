@@ -1,31 +1,6 @@
-import { Canvas } from 'canvas';
-import { FileToWrite } from '../../types';
-import { Palette16Bit } from '../palette/types';
+import { BaseTile, FileToWrite } from '../../types';
 
-export type SROMTile = {
-	/**
-	 * the modern png/aseprite source for this tile,
-	 */
-	canvasSource: Canvas;
-
-	/**
-	 * The sixteen bit palette that got assigned to this source.
-	 * The source will use this to figure out how to convert into
-	 * the indexed format
-	 */
-	palette?: Palette16Bit;
-
-	/**
-	 * Which palette this is in the final 16bit palette array output
-	 */
-	paletteIndex?: number;
-
-	/**
-	 * If this tile is a duplicate of another, then
-	 * this points to the other tile it duplicates
-	 */
-	duplicateOf?: SROMTile;
-
+export type SROMTile = BaseTile & {
 	/**
 	 * The data to place in the srom binary, each number
 	 * will be from 0 to 15

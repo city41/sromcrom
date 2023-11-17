@@ -1,15 +1,9 @@
-import { Canvas } from 'canvas';
 import { Palette16Bit } from '../../api/palette/types';
 import { BLACK16, TRANSPARENT_16BIT_COLOR } from '../../api/palette/colors';
 import { get24BitPalette } from '../../api/palette/get24BitPalette';
 import { convertTo16BitPalette } from '../../api/palette/convertTo16Bit';
 import uniq from 'lodash/uniq';
-
-type BaseTile = {
-	canvasSource: Canvas;
-	palette?: Palette16Bit;
-	paletteIndex?: number;
-};
+import { BaseTile } from '../../types';
 
 // a string in the form i-i-i-... where i is a 16 bit packed color
 // way too complex and tedious to model as a template literal
@@ -112,7 +106,7 @@ function mergePalettes(inputPaletteMap: PaletteMap): PaletteMap {
 function padTo16Values(palette: Palette16Bit): Palette16Bit {
 	if (palette.length > 16) {
 		throw new Error(
-			`determinePalettes#patTo16Values: a palette has more than 16 values: ${palette.length}`
+			`determinePalettes#padTo16Values: a palette has more than 16 values: ${palette.length}`
 		);
 	}
 

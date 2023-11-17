@@ -1,8 +1,6 @@
-type TileComparator<T> = (a: T, b: T) => boolean;
+import { BaseTile } from '../../types';
 
-type BaseTile = {
-	duplicateOf?: BaseTile;
-};
+type TileComparator<T> = (a: T, b: T) => boolean;
 
 function markDupes<T extends BaseTile>(
 	tiles: T[],

@@ -132,12 +132,12 @@ function findPalette(tile: BaseTile, paletteMap: PaletteMap): Palette16Bit {
 }
 
 function assignPalettes(
-	allTiles: Array<BaseTile | null>,
+	inputTiles: Array<BaseTile | null>,
 	paletteMap: PaletteMap,
 	finalPalettes: Palette16Bit[],
 	paletteStartIndex: number
 ) {
-	allTiles.forEach((tile) => {
+	inputTiles.forEach((tile) => {
 		if (!tile) {
 			return;
 		}
@@ -183,9 +183,9 @@ function determinePalettesToEmit<TTile extends BaseTile | null>(
 	const finalPalettesNotYetPadded = Array.from(mergedPaletteMap.keys());
 
 	// for each generator, convert their sources into sources-with-palettes
-	// later these sources-with-palettes will be used to build the actual CROM data
+	// later these sources-with-palettes will be used to build the actual CROM/SROM data
 	assignPalettes(
-		allTiles,
+		tilesThatWillEmitTheirPalettes,
 		mergedPaletteMap,
 		finalPalettesNotYetPadded,
 		paletteStartIndex

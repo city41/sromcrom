@@ -10,6 +10,7 @@ import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
 import { SROM_TILE_SIZE_PX } from '../../api/srom/constants';
 import { isEqual } from 'lodash';
 import { EyeCatcherJsonSpec } from '../../types';
+import { Palette16Bit } from '../../api/palette/types';
 
 type Size = {
 	width: number;
@@ -94,6 +95,13 @@ const COPYRIGHT_TILE_POSITIONS = [[0x7b]];
 const EMPTY_IMAGE_ERROR_MESSAGE =
 	'eyecatcher images can not have any empty tiles. If the tile should be blank, fill it with magenta.';
 
+// as they eyecatcher animates the palette changes, but this is the palette in its final form.
+// all parts of the eyecatcher use this same palette. Color 5 is "SNK blue"
+const EYECATCHER_PALETTE: Palette16Bit = [
+	0x0000, 0x0fff, 0x0ddd, 0x0aaa, 0x7555, 0x306e, 0x0000, 0x0000, 0x0000,
+	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+];
+
 function hasEmpty<T extends SROMTile | CROMTile | null>(
 	matrix: T[][]
 ): boolean {
@@ -106,7 +114,7 @@ function getSROMSource(imagePath: string, expectedSize: Size): SROMTileMatrix {
 
 	if (width !== expectedSize.width || height !== expectedSize.height) {
 		throw new Error(
-			`eyecatcher image, ${imagePath}, is wrong size. Should be ${expectedSize.width}x${expectedSize.height}, but is ${width}x${height}`
+			`eyecatcher image, ${imagePath}, is the wrong size. Should be ${expectedSize.width}x${expectedSize.height}, but is ${width}x${height}`
 		);
 	}
 
@@ -116,7 +124,18 @@ function getSROMSource(imagePath: string, expectedSize: Size): SROMTileMatrix {
 		throw new Error(EMPTY_IMAGE_ERROR_MESSAGE);
 	}
 
-	return extractSromTileSources(context);
+	const sromImage = extractSromTileSources(context);
+
+	sromImage.forEach((col) => {
+		col.forEach((tile) => {
+			if (tile) {
+				tile.palette = EYECATCHER_PALETTE;
+				tile.emitPalette = false;
+			}
+		});
+	});
+
+	return sromImage;
 }
 
 function setSROMPositions(sromTiles: SROMTile[][], positions: number[][]) {
@@ -207,6 +226,15 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 			throw new Error(EMPTY_IMAGE_ERROR_MESSAGE);
 		}
 
+		cromTileSources.forEach((row) => {
+			row.forEach((tile) => {
+				if (tile) {
+					tile.palette = EYECATCHER_PALETTE;
+					tile.emitPalette = false;
+				}
+			});
+		});
+
 		return [cromTileSources];
 	},
 
@@ -290,6 +318,7 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 
 	setSROMPositions(_rootDir, _json, sromTiles) {
 		// TODO: use the json to figure out which images are present
+		// but this approach is safe because sromTiles will only contain eyecatcher tiles
 
 		const max330Image = sromTiles.find((i) => {
 			return (

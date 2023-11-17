@@ -1,6 +1,9 @@
 import path from 'path';
 import { createCanvas, CanvasRenderingContext2D } from 'canvas';
-import { TRANSPARENT_24BIT_COLOR } from '../../api/palette/colors';
+import {
+	TRANSPARENT_16BIT_COLOR,
+	TRANSPARENT_24BIT_COLOR,
+} from '../../api/palette/colors';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
@@ -99,9 +102,22 @@ const COPYRIGHT_TILE_POSITIONS = [[0x7b]];
 const EYECATCHER_PALETTE: Palette16Bit = [
 	// the palette was altered for sromcrom, the first color is now magenta instead of 0x0000. That way all magenta pixels
 	// in source eyecatcher images get mapped to index zero
-	0x8000,
-	0x0fff, 0x0ddd, 0x0aaa, 0x7555, 0x306e, 0x0000, 0x0000, 0x0000, 0x0000,
-	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+	TRANSPARENT_16BIT_COLOR,
+	0x0fff,
+	0x0ddd,
+	0x0aaa,
+	0x7555,
+	0x306e,
+	0x0000,
+	0x0000,
+	0x0000,
+	0x0000,
+	0x0000,
+	0x0000,
+	0x0000,
+	0x0000,
+	0x0000,
+	0x0000,
 ];
 
 function matchesEyecatcherPalette(context: CanvasRenderingContext2D): boolean {

@@ -13,6 +13,7 @@ import { eyecatcher } from '../../generators/eyecatcher';
 import { tilesets } from '../../generators/tilesets';
 import { cromImages } from '../../generators/cromImages';
 import { cromAnimations } from '../../generators/cromAnimations';
+import { cromFFBlankGenerator } from './cromFFBlankGenerator';
 
 // create crom tile generators based on what is in the json file
 const generators: Record<string, ICROMGenerator> = {
@@ -33,6 +34,12 @@ function orchestrate(
 		.map((generatorKey) => {
 			return generators[generatorKey];
 		});
+
+	// ensure the tile at 0xff is blank, as it is used by the eyecatcher.
+	// we push this on every time, as even if no eyecatcher images are specified,
+	// ensuring a single blank tile is not a big deal and will make it more obvious
+	// what the eyecatcher is doing
+	cromGenerators.push(cromFFBlankGenerator);
 
 	const cromSourcesResult = cromGenerators.map((generator) => {
 		const tiles = generator.getCROMSources(
@@ -65,7 +72,7 @@ function orchestrate(
 
 	// figure out where the croms will go in the binary rom file, taking into account
 	// croms that must be at a certain location (primarily the eyecatcher) and auto animations
-	// that must be positioned on a multiple of 4 or 8
+	// that must be positioned on a multiple of 4 or 8src/orchestrators/sromOrchestrator/ffBlankGenerator.ts
 	// again done with an in place mutation
 	positionCroms(rootDir, input, cromSourcesResult);
 

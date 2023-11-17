@@ -1,12 +1,13 @@
 import { createCanvas } from 'canvas';
-import { SROM_TILE_SIZE_PX } from '../../api/srom/constants';
-import { ISROMGenerator } from '../../api/srom/types';
+import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
+import { ICROMGenerator } from '../../api/crom/types';
 
 const BLANK_TILE_CANVAS = (function () {
-	const canvas = createCanvas(SROM_TILE_SIZE_PX, SROM_TILE_SIZE_PX);
+	const canvas = createCanvas(CROM_TILE_SIZE_PX, CROM_TILE_SIZE_PX);
 	const context = canvas.getContext('2d');
 	const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
+	// create a magenta tile
 	for (let p = 0; p < imageData.data.length; p += 4) {
 		imageData.data[p] = 255; // red channel
 		imageData.data[p + 1] = 0; // green channel
@@ -27,9 +28,9 @@ const BLANK_TILE_CANVAS = (function () {
  * This generator is a simple one that just pushes on a blank tile
  * positioned at 0xff
  */
-const ffBlankGenerator: ISROMGenerator = {
+const cromFFBlankGenerator: ICROMGenerator = {
 	jsonKey: 'ignored',
-	getSROMSources(_rootDir, _jsonSpec) {
+	getCROMSources(_rootDir, _jsonSpec) {
 		return [
 			[
 				[
@@ -40,9 +41,9 @@ const ffBlankGenerator: ISROMGenerator = {
 			],
 		];
 	},
-	setSROMPositions(_rootDir, _jsonSpec, sromTiles) {
-		sromTiles[0][0][0]!.sromIndex = 0xff;
+	setCROMPositions(_rootDir, _jsonSpec, cromTiles) {
+		cromTiles[0][0][0]!.cromIndex = 0xff;
 	},
 };
 
-export { ffBlankGenerator };
+export { cromFFBlankGenerator };

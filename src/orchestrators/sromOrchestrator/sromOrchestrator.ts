@@ -10,7 +10,7 @@ import { positionSroms } from './positionSroms';
 import { emitSromBinary } from './emitSromBinary';
 import { eyecatcher } from '../../generators/eyecatcher';
 import { sromImages } from '../../generators/sromImages';
-import { ffBlankGenerator } from './ffBlankGenerator';
+import { sromFFBlankGenerator } from './sromFFBlankGenerator';
 
 const generators: Record<string, ISROMGenerator> = {
 	eyecatcher,
@@ -34,7 +34,7 @@ function orchestrate(
 	// then that image needs to have a blank tile at that spot, and if it doesn't,
 	// the user will be warned
 	if (!input.eyecatcher?.proGearSpecImageFile) {
-		sromGenerators.push(ffBlankGenerator);
+		sromGenerators.push(sromFFBlankGenerator);
 	}
 
 	const sromSourcesResult = sromGenerators.map((generator) => {

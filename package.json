@@ -1,6 +1,6 @@
 {
 	"name": "@city41/sromcrom",
-	"version": "0.8.2-beta0",
+	"version": "0.8.2-beta1",
 	"main": "lib/index.js",
 	"files": [
 		"lib/**/*.js"

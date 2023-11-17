@@ -10,7 +10,7 @@ import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
 import { SROM_TILE_SIZE_PX } from '../../api/srom/constants';
 import { isEqual } from 'lodash';
 import { EyeCatcherJsonSpec } from '../../types';
-import { Palette16Bit, Palette24Bit } from '../../api/palette/types';
+import { Palette16Bit } from '../../api/palette/types';
 import { get24BitPalette } from '../../api/palette/get24BitPalette';
 import { convertTo16BitPalette } from '../../api/palette/convertTo16Bit';
 
@@ -97,14 +97,15 @@ const COPYRIGHT_TILE_POSITIONS = [[0x7b]];
 // as they eyecatcher animates the palette changes, but this is the palette in its final form.
 // all parts of the eyecatcher use this same palette. Color 5 is "SNK blue"
 const EYECATCHER_PALETTE: Palette16Bit = [
-	0x0000, 0x0fff, 0x0ddd, 0x0aaa, 0x7555, 0x306e, 0x0000, 0x0000, 0x0000,
-	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+	// the palette was altered for sromcrom, the first color is now magenta instead of 0x0000. That way all magenta pixels
+	// in source eyecatcher images get mapped to index zero
+	0x8000,
+	0x0fff, 0x0ddd, 0x0aaa, 0x7555, 0x306e, 0x0000, 0x0000, 0x0000, 0x0000,
+	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 ];
 
 function matchesEyecatcherPalette(context: CanvasRenderingContext2D): boolean {
-	const palette24 = get24BitPalette(context.canvas).filter(
-		(c) => !isEqual(c, TRANSPARENT_24BIT_COLOR)
-	) as Palette24Bit;
+	const palette24 = get24BitPalette(context.canvas);
 	const palette16 = convertTo16BitPalette(palette24);
 
 	return palette16.every((p16) => {

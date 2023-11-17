@@ -1,6 +1,6 @@
 import path from 'path';
 import { createCanvas, CanvasRenderingContext2D } from 'canvas';
-import { BLACK24 } from '../../api/palette/colors';
+import { TRANSPARENT_24BIT_COLOR } from '../../api/palette/colors';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
@@ -10,7 +10,7 @@ import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
 import { SROM_TILE_SIZE_PX } from '../../api/srom/constants';
 import { isEqual } from 'lodash';
 import { EyeCatcherJsonSpec } from '../../types';
-import { Palette16Bit } from '../../api/palette/types';
+import { Palette16Bit, Palette24Bit } from '../../api/palette/types';
 import { get24BitPalette } from '../../api/palette/get24BitPalette';
 import { convertTo16BitPalette } from '../../api/palette/convertTo16Bit';
 
@@ -102,7 +102,9 @@ const EYECATCHER_PALETTE: Palette16Bit = [
 ];
 
 function matchesEyecatcherPalette(context: CanvasRenderingContext2D): boolean {
-	const palette24 = get24BitPalette(context.canvas, false);
+	const palette24 = get24BitPalette(context.canvas).filter(
+		(c) => !isEqual(c, TRANSPARENT_24BIT_COLOR)
+	) as Palette24Bit;
 	const palette16 = convertTo16BitPalette(palette24);
 
 	return palette16.every((p16) => {
@@ -169,7 +171,7 @@ function widenMainImageByOneColumn(
 	return destContext;
 }
 
-function isTileForFFBlack(sromTileSources: SROMTileMatrix): boolean {
+function isTileForFFBlank(sromTileSources: SROMTileMatrix): boolean {
 	const tile = sromTileSources[0][4];
 
 	if (tile === null) {
@@ -187,7 +189,7 @@ function isTileForFFBlack(sromTileSources: SROMTileMatrix): boolean {
 	for (let p = 0; p < imageData.data.length; p += 4) {
 		const pixel = Array.from(imageData.data.slice(p, p + 4));
 
-		if (!isEqual(pixel, BLACK24)) {
+		if (!isEqual(pixel, TRANSPARENT_24BIT_COLOR)) {
 			return false;
 		}
 	}
@@ -268,9 +270,9 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 			);
 			sources.push(proGearSource);
 
-			if (!isTileForFFBlack(proGearSource)) {
+			if (!isTileForFFBlank(proGearSource)) {
 				console.warn(
-					'proGearSpecImageFile: the tile that will be placed at 0xff in the SROM binary (at {64px,0px} in the image) is not fully black. That tile will be drawn over the entire fix layer in many situations. It should be an entirely black tile.'
+					'proGearSpecImageFile: the tile that will be placed at 0xff in the SROM binary (at {64px,0px} in the image) is not fully blank. That tile will be drawn over the entire fix layer in many situations. It should be an entirely magenta tile.'
 				);
 			}
 		}

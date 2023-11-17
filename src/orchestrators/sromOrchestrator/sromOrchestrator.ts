@@ -2,7 +2,7 @@ import path from 'path';
 
 import { Palette16Bit } from '../../api/palette/types';
 import { ISROMGenerator, SROMTile } from '../../api/srom/types';
-import { determinePalettes } from '../common/determinePalettes';
+import { determinePalettesToEmit } from '../common/determinePalettesToEmit';
 import { FileToWrite, JsonInput } from '../../types';
 import { indexSroms } from './indexSroms';
 import { markSromDupes } from './markSromDupes';
@@ -22,7 +22,7 @@ function orchestrate(
 	rootDir: string,
 	input: JsonInput,
 	palettesStartingIndex: number
-): { palettes: Palette16Bit[]; filesToWrite: FileToWrite[] } {
+): { palettesToEmit: Palette16Bit[]; filesToWrite: FileToWrite[] } {
 	const sromGenerators = availableSROMGenerators
 		.filter((generatorKey) => !!input[generatorKey as keyof JsonInput])
 		.map((generatorKey) => {
@@ -30,7 +30,7 @@ function orchestrate(
 		});
 
 	// if the proGearSpec image was not specified, then we add this generator
-	// who will ensure that the tile at 0xff is blank. If the image is specified,
+	// which will ensure that the tile at 0xff is blank. If the image is specified,
 	// then that image needs to have a blank tile at that spot, and if it doesn't,
 	// the user will be warned
 	if (!input.eyecatcher?.proGearSpecImageFile) {
@@ -51,10 +51,14 @@ function orchestrate(
 
 	const allTiles = sromSourcesResult
 		.map((input) => input.tiles)
+		// the tiles are a collection of collection of columns, so flatten up to 3
 		.flat(3)
 		.filter((t) => t !== null) as SROMTile[];
 
-	const finalPalettes = determinePalettes(allTiles, palettesStartingIndex);
+	const finalPalettes = determinePalettesToEmit(
+		allTiles,
+		palettesStartingIndex
+	);
 
 	// convert the 24bit rgb source canvases into actual SROM Tiles with indexed data
 	// making sure to keep associating a tile with the generator that initially provided it
@@ -94,7 +98,7 @@ function orchestrate(
 	);
 
 	return {
-		palettes: finalPalettes,
+		palettesToEmit: finalPalettes,
 		filesToWrite: [sromFileToWrite].concat(otherFilesToWrite),
 	};
 }

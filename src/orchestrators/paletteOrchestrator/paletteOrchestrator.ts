@@ -6,9 +6,9 @@ import { emit } from '../../emit/emit';
 function orchestrate(
 	rootDir: string,
 	input: JsonInput,
-	palettes: Palette16Bit[]
+	palettesToEmit: Palette16Bit[]
 ): { filesToWrite: FileToWrite[] } {
-	const finalPalettes = [BLACK_PALETTE].concat(palettes);
+	const finalPalettes = [BLACK_PALETTE].concat(palettesToEmit);
 
 	if (!input.palettes) {
 		return { filesToWrite: [] };

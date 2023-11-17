@@ -22,6 +22,14 @@ export type BaseTile = {
 	palette?: Palette16Bit;
 
 	/**
+	 * If set, determines whether this palette should be included into the emitted
+	 * palette data. If not set the default is true.
+	 *
+	 * This is used by the eyecatcher as those images use predefined palettes already on the system
+	 */
+	emitPalette?: boolean;
+
+	/**
 	 * Which palette this is in the final 16bit palette array output
 	 */
 	paletteIndex?: number;

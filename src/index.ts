@@ -42,16 +42,18 @@ const sromOrchestrateResult = sromOrchestrate(rootDir, resourceJson, 1);
 const cromOrchestrateResult = cromOrchestrate(
 	rootDir,
 	resourceJson,
-	1 + sromOrchestrateResult.palettes.length
+	1 + sromOrchestrateResult.palettesToEmit.length
 );
 
-const sromAndCromPalettes: Palette16Bit[] =
-	sromOrchestrateResult.palettes.concat(cromOrchestrateResult.palettes);
+const sromAndCromPalettesToEmit: Palette16Bit[] =
+	sromOrchestrateResult.palettesToEmit.concat(
+		cromOrchestrateResult.palettesToEmit
+	);
 
 const paletteOrchestrateResult = paletteOrchestrate(
 	rootDir,
 	resourceJson,
-	sromAndCromPalettes
+	sromAndCromPalettesToEmit
 );
 
 writeFiles(

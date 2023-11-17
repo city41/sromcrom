@@ -156,14 +156,21 @@ function assignPalettes(
 	});
 }
 
-function determinePalettes<TTile extends BaseTile | null>(
+function determinePalettesToEmit<TTile extends BaseTile | null>(
 	allTiles: TTile[],
 	paletteStartIndex: number
 ): Palette16Bit[] {
+	// if a tile is saying don't emit my palette, then it does not need to participate in this.
+	// these are primarily eyecatcher tiles, which use system palettes
+	const tilesThatWillEmitTheirPalettes = allTiles.filter(
+		// if emitPalette is not defined, it defaults to true
+		(t) => !t || typeof t.emitPalette === 'undefined' || t.emitPalette
+	);
+
 	// convert the 1d array of sources into a palette map,
 	// which maps from a 16 bit palette to all of the sources
 	// that can use it
-	const paletteMap = buildPaletteMap(allTiles);
+	const paletteMap = buildPaletteMap(tilesThatWillEmitTheirPalettes);
 
 	// it is likely palettes can get merged. say two sources each only have
 	// 8 colors in them, then we can merge those 8 colors into one palette,
@@ -187,4 +194,4 @@ function determinePalettes<TTile extends BaseTile | null>(
 	return finalPalettesNotYetPadded.map(padTo16Values);
 }
 
-export { determinePalettes };
+export { determinePalettesToEmit };

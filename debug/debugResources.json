@@ -1,0 +1,12 @@
+{
+	"romPathRoot": "./debug-",
+	"padCROMFilesTo": 1048576,
+	"cromImages": {
+		"inputs": [
+			{
+				"name": "debug",
+				"imageFile": "./debugTiles.png"
+			}
+		]
+	}
+}

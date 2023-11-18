@@ -1,10 +1,21 @@
 import { Canvas } from 'canvas';
-import { convertTo16BitColor } from '../palette/convertTo16Bit';
+import {
+	convertTo16BitColor,
+	convertTo16BitColorIgnoreDarkBit,
+} from '../palette/convertTo16Bit';
 import { Color24Bit, Palette16Bit } from '../palette/types';
 import { SROM_TILE_SIZE_PX } from './constants';
 import { SROMTile } from './types';
 
-function getIndexedData(source: Canvas, palette: Palette16Bit): number[] {
+function getIndexedData(
+	source: Canvas,
+	palette: Palette16Bit,
+	ignoreDarkBit: boolean
+): number[] {
+	const convertColor = ignoreDarkBit
+		? convertTo16BitColorIgnoreDarkBit
+		: convertTo16BitColor;
+
 	const indexed: number[] = [];
 	const rawImageData = source
 		.getContext('2d')
@@ -15,7 +26,7 @@ function getIndexedData(source: Canvas, palette: Palette16Bit): number[] {
 			rawImageData.slice(i, i + 4)
 		) as Color24Bit;
 
-		const currentColor16 = convertTo16BitColor(currentColor24);
+		const currentColor16 = convertColor(currentColor24);
 
 		const index = palette.indexOf(currentColor16);
 
@@ -92,7 +103,11 @@ export function setSROMBinaryData(tile: SROMTile): SROMTile {
 		);
 	}
 
-	const indexedData = getIndexedData(tile.canvasSource, tile.palette);
+	const indexedData = getIndexedData(
+		tile.canvasSource,
+		tile.palette,
+		tile.paletteIgnoresDarkBit ?? false
+	);
 	tile.sromBinaryData = convertToSromFormat(indexedData);
 
 	return tile;

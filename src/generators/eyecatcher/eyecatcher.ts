@@ -15,7 +15,7 @@ import { isEqual } from 'lodash';
 import { EyeCatcherJsonSpec } from '../../types';
 import { Palette16Bit } from '../../api/palette/types';
 import { get24BitPalette } from '../../api/palette/get24BitPalette';
-import { convertTo16BitPalette } from '../../api/palette/convertTo16Bit';
+import { convertTo16BitPaletteIgnoreDarkBit } from '../../api/palette/convertTo16Bit';
 
 type Size = {
 	width: number;
@@ -122,7 +122,7 @@ const EYECATCHER_PALETTE: Palette16Bit = [
 
 function matchesEyecatcherPalette(context: CanvasRenderingContext2D): boolean {
 	const palette24 = get24BitPalette(context.canvas);
-	const palette16 = convertTo16BitPalette(palette24);
+	const palette16 = convertTo16BitPaletteIgnoreDarkBit(palette24);
 
 	return palette16.every((p16) => {
 		return EYECATCHER_PALETTE.includes(p16);
@@ -152,6 +152,7 @@ function getSROMSource(imagePath: string, expectedSize: Size): SROMTileMatrix {
 			if (tile) {
 				tile.palette = EYECATCHER_PALETTE;
 				tile.emitPalette = false;
+				tile.paletteIgnoresDarkBit = true;
 			}
 		});
 	});
@@ -239,6 +240,7 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 				if (tile) {
 					tile.palette = EYECATCHER_PALETTE;
 					tile.emitPalette = false;
+					tile.paletteIgnoresDarkBit = true;
 				}
 			});
 		});

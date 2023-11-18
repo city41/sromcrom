@@ -1,5 +1,8 @@
 import { CanvasRenderingContext2D } from 'canvas';
-import { convertTo16BitColor } from '../palette/convertTo16Bit';
+import {
+	convertTo16BitColor,
+	convertTo16BitColorIgnoreDarkBit,
+} from '../palette/convertTo16Bit';
 import { Color24Bit, Palette16Bit } from '../palette/types';
 import { CROMTile } from './types';
 
@@ -20,13 +23,17 @@ function separateIntoCorners(
 
 function convertToIndexed(
 	input: Uint8ClampedArray,
-	palette: Palette16Bit
+	palette: Palette16Bit,
+	ignoreDarkBit: boolean
 ): number[] {
 	const indexed: number[] = [];
+	const convertColor = ignoreDarkBit
+		? convertTo16BitColorIgnoreDarkBit
+		: convertTo16BitColor;
 
 	for (let i = 0; i < input.length; i += 4) {
 		const color24 = Array.from(input.slice(i, i + 4));
-		const color16 = convertTo16BitColor(color24 as Color24Bit);
+		const color16 = convertColor(color24 as Color24Bit);
 
 		// small little fix up, did a truly transparent color (alpha is zero)
 		// get into the tile? then choose color zero
@@ -36,7 +43,9 @@ function convertToIndexed(
 			throw new Error(
 				`crom#convertToIndexed: failed to find a matching 16 bit color, 24bit: ${color24.join(
 					','
-				)}, palette: ${palette.join(',')}`
+				)}, palette: ${palette
+					.map((c) => c.toString(16))
+					.join(',')}, ignoreDarkBit: ${ignoreDarkBit}`
 			);
 		}
 
@@ -89,7 +98,11 @@ export function setCROMBinaryData(tile: CROMTile): CROMTile {
 
 	const corners = separateIntoCorners(tile.canvasSource.getContext('2d'));
 	const indexedCorners = corners.map((corner) => {
-		return convertToIndexed(corner, tile.palette!);
+		return convertToIndexed(
+			corner,
+			tile.palette!,
+			tile.paletteIgnoresDarkBit ?? false
+		);
 	});
 
 	const cOddData = getBytesForIndexedCorners(indexedCorners, 0);

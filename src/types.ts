@@ -30,6 +30,12 @@ export type BaseTile = {
 	emitPalette?: boolean;
 
 	/**
+	 * If true, when matching from 24 bit color to palette index, a conversion ignoring the dark bit
+	 * will be used. Not used in normal situations, but used by eyecatcher tiles
+	 */
+	paletteIgnoresDarkBit?: boolean;
+
+	/**
 	 * Which palette this is in the final 16bit palette array output
 	 */
 	paletteIndex?: number;

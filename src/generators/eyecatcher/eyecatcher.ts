@@ -67,6 +67,13 @@ const EYECATCHER_COPYRIGHT_SIZE_PX = {
 };
 
 // taken from https://wiki.neogeodev.org/index.php?title=Eyecatcher
+const MAIN_IMAGE_TILE_POSITIONS = [
+	[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+	[14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28],
+	[29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43],
+	[44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57],
+];
+
 const MAX_330_MEGA_TILE_POSITIONS = [
 	[
 		0x05, 0x07, 0x09, 0x0b, 0x0d, 0x0f, 0x15, 0x17, 0x19, 0x1b, 0x1d, 0x1f,
@@ -220,8 +227,10 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 		}
 
 		const cromTileSources = extractCromTileSources(context);
-		const upperRightCorner = cromTileSources[0][14];
-		const lowerRightCorner = cromTileSources[3][14];
+		// these tiles should not be emitted into the rom, so rip them out
+		// but hold onto them to assert on them just below
+		const [upperRightCorner] = cromTileSources[0].splice(14, 1);
+		const [lowerRightCorner] = cromTileSources[3].splice(14, 1);
 
 		if (!isTileBlank(upperRightCorner)) {
 			throw new Error(
@@ -304,18 +313,14 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 	},
 
 	setCROMPositions(_rootDir, _json, images) {
-		let eyeCatcherIndex = 0;
-
 		const eyecatcherMainImage = images[0];
 
 		for (let y = 0; y < eyecatcherMainImage.length; ++y) {
 			for (let x = 0; x < eyecatcherMainImage[y].length; ++x) {
-				if ((y === 0 || y === 3) && x === 14) {
-					// upper right corner or lower right corner, which should not be emitted
-					eyecatcherMainImage[y][x]!.duplicateOf = eyecatcherMainImage[0][0]!;
-				} else {
-					eyecatcherMainImage[y][x]!.cromIndex = eyeCatcherIndex++;
+				const cromIndex = MAIN_IMAGE_TILE_POSITIONS[y]?.[x];
 
+				if (typeof cromIndex === 'number') {
+					eyecatcherMainImage[y][x]!.cromIndex = cromIndex;
 					// ensure these tiles are totally static and not involved
 					// in any duplication or auto animations
 					// TODO: a better way to handle this

@@ -2,13 +2,13 @@ import path from 'path';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
-import { CROMTileMatrix, ICROMGenerator } from '../../api/crom/types';
+import { CROMTile, CROMTileMatrix, ICROMGenerator } from '../../api/crom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { sliceOutFrame } from '../../api/tile/sliceOutFrame';
 import {
 	CromAnimation,
 	CromAnimationInput,
-	CromAnimationsInputJsonSpec
+	CromAnimationsInputJsonSpec,
 } from '../../types';
 import { emit } from '../../emit/emit';
 
@@ -38,6 +38,14 @@ function toCodeEmitTiles(inputTiles: CROMTileMatrix): CodeEmitTileMatrix {
 		return inputRow.map((inputTile) => {
 			if (inputTile === null) {
 				return null;
+			}
+
+			if (inputTile.cromIndex === undefined) {
+				throw new Error(
+					`toCodeEmitTiles: this tile is unpositioned, (dupe? ${!!inputTile.duplicateOf}, dupe index: ${
+						(inputTile.duplicateOf as CROMTile)?.cromIndex ?? 'none'
+					}`
+				);
 			}
 
 			return {

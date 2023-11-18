@@ -58,6 +58,10 @@ function orchestrate(
 		.flat(3)
 		.filter((t) => t !== null) as CROMTile[];
 
+	if (new Set(allTiles).size !== allTiles.length) {
+		throw new Error('the same tile ref was added more than once');
+	}
+
 	const finalPalettes = determinePalettesToEmit(
 		allTiles,
 		palettesStartingIndex
@@ -72,9 +76,18 @@ function orchestrate(
 
 	// figure out where the croms will go in the binary rom file, taking into account
 	// croms that must be at a certain location (primarily the eyecatcher) and auto animations
-	// that must be positioned on a multiple of 4 or 8src/orchestrators/sromOrchestrator/ffBlankGenerator.ts
+	// that must be positioned on a multiple of 4 or 8
 	// again done with an in place mutation
 	positionCroms(rootDir, input, cromSourcesResult);
+
+	const unpositionedTiles = allTiles.filter(
+		(t) => t.cromIndex === undefined && !t.duplicateOf
+	);
+	if (unpositionedTiles.length > 0) {
+		throw new Error(
+			`after crom positioning, ${unpositionedTiles.length} did not get positioned. Something is wrong.`
+		);
+	}
 
 	const cromBinaries = emitCromBinaries(
 		allTiles,

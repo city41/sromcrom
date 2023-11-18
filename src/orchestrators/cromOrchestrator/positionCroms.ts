@@ -62,11 +62,7 @@ function positionCroms(
 	let curIndex =
 		allIndicesSoFar.length === 0 ? 0 : Math.max(...allIndicesSoFar) + 1;
 
-	while (
-		mustGoOnEights.length > 0 ||
-		mustGoOnFours.length > 0 ||
-		canGoAnywhere.length > 0
-	) {
+	while (canGoAnywhere.length > 0) {
 		if (curIndex % 8 === 0 && mustGoOnEights.length > 0) {
 			const tile = mustGoOnEights.shift();
 			tile!.cromIndex = curIndex++;
@@ -85,12 +81,6 @@ function positionCroms(
 			const tile = canGoAnywhere.shift();
 			tile!.cromIndex = curIndex++;
 		}
-	}
-
-	if (canGoAnywhere.length !== 0) {
-		throw new Error(
-			'positionCroms: left while loop before depleting canGoAnywhere'
-		);
 	}
 
 	while (curIndex % 8 !== 0) {

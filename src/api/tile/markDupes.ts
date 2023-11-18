@@ -13,7 +13,11 @@ function markDupes<T extends BaseTile>(
 		}
 
 		const matchingTiles = tiles.filter((otherTile) => {
-			return otherTile !== tile && comparator(tile, otherTile);
+			return (
+				otherTile !== tile &&
+				!otherTile.duplicateOf &&
+				comparator(tile, otherTile)
+			);
 		});
 
 		matchingTiles.forEach((mt) => {

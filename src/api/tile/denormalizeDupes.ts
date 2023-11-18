@@ -1,10 +1,10 @@
 import cloneDeep from 'lodash/cloneDeep';
 
 /**
- * If a tile is a dupe, it won't have a sromIndex but instead
+ * If a tile is a dupe, it won't have a c/sromIndex but instead
  * it will point to what it duplicates. This makes writing tiles
  * during codeEmit more painful. This function takes duped tiles
- * and gives them the same sromIndex as who they are duplicating.
+ * and gives them the same c/sromIndex as who they are duplicating.
  * Then codeEmit only needs to work with sromIndex and not care
  * about duplicates at all.
  */

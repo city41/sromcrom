@@ -1,5 +1,5 @@
 import path from 'path';
-import { createCanvas, CanvasRenderingContext2D } from 'canvas';
+import { CanvasRenderingContext2D } from 'canvas';
 import {
 	TRANSPARENT_16BIT_COLOR,
 	TRANSPARENT_24BIT_COLOR,
@@ -23,7 +23,7 @@ type Size = {
 };
 
 const EYECATCHER_MAIN_IMAGE_SIZE_TILES = {
-	width: 14,
+	width: 15,
 	height: 4,
 };
 const EYECATCHER_MAIN_IMAGE_SIZE_PX = {
@@ -167,30 +167,7 @@ function setSROMPositions(sromTiles: SROMTile[][], positions: number[][]) {
 	}
 }
 
-function widenMainImageByOneColumn(
-	inputContext: CanvasRenderingContext2D
-): CanvasRenderingContext2D {
-	const destCanvas = createCanvas(
-		EYECATCHER_MAIN_IMAGE_SIZE_PX.width + CROM_TILE_SIZE_PX,
-		EYECATCHER_MAIN_IMAGE_SIZE_PX.height
-	);
-	const destContext = destCanvas.getContext('2d');
-	destContext.fillStyle = `rgb(255, 0, 255)`;
-	destContext.fillRect(
-		0,
-		0,
-		destContext.canvas.width,
-		destContext.canvas.height
-	);
-
-	destContext.drawImage(inputContext.canvas, 0, 0);
-
-	return destContext;
-}
-
-function isTileForFFBlank(sromTileSources: SROMTileMatrix): boolean {
-	const tile = sromTileSources[0][4];
-
+function isTileBlank(tile: SROMTile | null): boolean {
 	if (tile === null) {
 		return false;
 	}
@@ -235,19 +212,27 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 			);
 		}
 
-		// even though the eye catcher is technically 15 tiles wide, the last column
-		// is strange. the top and bottom is not in the crom, and the middle tiles
-		// should be blank. The way we are enforcing this, is requiring an image that is 14
-		// tiles wide, then appending a blank tile column to the end
-		const finalContext = widenMainImageByOneColumn(context);
-
-		if (!matchesEyecatcherPalette(finalContext)) {
+		if (!matchesEyecatcherPalette(context)) {
 			throw new Error(
 				'The eyecatcher main logo image cannot be rendered with the system eyecatcher palette'
 			);
 		}
 
-		const cromTileSources = extractCromTileSources(finalContext);
+		const cromTileSources = extractCromTileSources(context);
+		const upperRightCorner = cromTileSources[0][14];
+		const lowerRightCorner = cromTileSources[3][14];
+
+		if (!isTileBlank(upperRightCorner)) {
+			throw new Error(
+				'The eyecatcher main logo image must have a blank tile in the upper right corner (all magenta), as it will be thrown away'
+			);
+		}
+
+		if (!isTileBlank(lowerRightCorner)) {
+			throw new Error(
+				'The eyecatcher main logo image must have a blank tile in the lower right corner (all magenta), as it will be thrown away'
+			);
+		}
 
 		cromTileSources.forEach((row) => {
 			row.forEach((tile) => {
@@ -287,8 +272,9 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 			);
 			sources.push(proGearSource);
 
-			if (!isTileForFFBlank(proGearSource)) {
-				console.warn(
+			const tileAtFF = proGearSource[0][4];
+			if (!isTileBlank(tileAtFF)) {
+				throw new Error(
 					'proGearSpecImageFile: the tile that will be placed at 0xff in the SROM binary (at {64px,0px} in the image) is not fully blank. That tile will be drawn over the entire fix layer in many situations. It should be an entirely magenta tile.'
 				);
 			}

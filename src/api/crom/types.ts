@@ -38,7 +38,7 @@ export type CROMTile = BaseTile & {
 
 	/**
 	 * The position in the crom binary for this tile
-	 * can be undefined if positionioning hasn't happened yet
+	 * can be undefined if positioning hasn't happened yet
 	 * or the tile is a dupe
 	 */
 	cromIndex?: number;

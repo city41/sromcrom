@@ -171,6 +171,10 @@ function setSROMPositions(sromTiles: SROMTile[][], positions: number[][]) {
 	for (let y = 0; y < positions.length; ++y) {
 		for (let x = 0; x < positions[y].length; ++x) {
 			sromTiles[y][x].sromIndex = positions[y][x];
+			// ensure these tiles are totally static and not involved
+			// in any duplication
+			// TODO: a better way to handle this
+			delete sromTiles[y][x]!.duplicateOf;
 		}
 	}
 }

@@ -79,7 +79,9 @@ const tilesets: ICROMGenerator<TilesetsJsonSpec> = {
 		if (preEmit) {
 			const preEmitPath = path.resolve(rootDir, preEmit);
 			const preEmitModule = require(preEmitPath);
-			renderData = preEmitModule(rootDir, tilesets);
+			// the module may be commonjs or esm
+			const preEmitFn = preEmitModule.default ?? preEmitModule;
+			renderData = preEmitFn(rootDir, tilesets);
 		} else {
 			renderData = { tilesets };
 		}

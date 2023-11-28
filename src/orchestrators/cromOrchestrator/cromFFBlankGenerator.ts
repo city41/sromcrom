@@ -36,13 +36,11 @@ const cromFFBlankGenerator: ICROMGenerator = {
 				[
 					{
 						canvasSource: BLANK_TILE_CANVAS,
+						cromIndex: 0xff,
 					},
 				],
 			],
 		];
-	},
-	setCROMPositions(_rootDir, _jsonSpec, cromTiles) {
-		cromTiles[0][0][0]!.cromIndex = 0xff;
 	},
 };
 

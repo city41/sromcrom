@@ -1,6 +1,6 @@
-import { SROMTileMatrix, ISROMGenerator } from '../../api/srom/types';
+import { ISROMGenerator, SROMSourceResult } from '../../api/srom/types';
 
-export type GeneratorWithSROMTiles = {
+export type GeneratorWithSROMSourceResults = {
 	generator: ISROMGenerator;
-	tiles: SROMTileMatrix[];
+	sromSourceResults: SROMSourceResult[];
 };

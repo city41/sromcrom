@@ -38,19 +38,19 @@ function orchestrate(
 	}
 
 	const sromSourcesResult = sromGenerators.map((generator) => {
-		const tiles = generator.getSROMSources(
+		const sromSourceResults = generator.getSROMSources(
 			rootDir,
 			input[generator.jsonKey as keyof JsonInput]
 		);
 
 		return {
-			tiles,
+			sromSourceResults,
 			generator,
 		};
 	});
 
 	const allTiles = sromSourcesResult
-		.map((input) => input.tiles)
+		.map((ssr) => ssr.sromSourceResults.map((s) => s.tiles))
 		// the tiles are a collection of collection of columns, so flatten up to 3
 		.flat(3)
 		.filter((t) => t !== null) as SROMTile[];
@@ -69,8 +69,7 @@ function orchestrate(
 	markSromDupes(allTiles);
 
 	// figure out where the sroms will go in the binary rom file, taking into account
-	// sroms that must be at a certain location (primarily the eyecatcher) and auto animations
-	// that must be positioned on a multiple of 4 or 8
+	// sroms that must be at a certain location (primarily the eyecatcher)
 	// again done with an in place mutation
 	positionSroms(rootDir, input, sromSourcesResult);
 
@@ -87,7 +86,7 @@ function orchestrate(
 					sromResult.generator.getSROMSourceFiles(
 						rootDir,
 						input[sromResult.generator.jsonKey as keyof JsonInput],
-						sromResult.tiles
+						sromResult.sromSourceResults
 					)
 				);
 			} else {

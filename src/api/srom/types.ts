@@ -13,26 +13,42 @@ export type SROMTile = BaseTile & {
 	 * or the tile is a dupe
 	 */
 	sromIndex?: number;
+
+	/**
+	 * If multiple tiles end up with the same sromIndex, the one with
+	 * a highest priority value will be emitted and the others elided.
+	 * If multiple tiles have the same index and priority, then it's
+	 * undefined which one gets into the binary
+	 */
+	priority?: number;
 };
 
 export type SROMTileMatrixCol = Array<SROMTile | null>;
 export type SROMTileMatrix = SROMTileMatrixCol[];
 
+export type SROMSourceResult<TInput = any> = {
+	tiles: SROMTileMatrix;
+	input: TInput;
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ISROMGenerator<T = any> = {
+export type ISROMGenerator<TInput = any, TEntry = any> = {
 	jsonKey: string;
 
-	getSROMSources: (rootDir: string, input: T) => SROMTileMatrix[];
+	getSROMSources: (
+		rootDir: string,
+		input: TInput
+	) => SROMSourceResult<TEntry>[];
 
 	setSROMPositions?: (
 		rootDir: string,
-		input: T,
-		sourceSROMs: SROMTileMatrix[]
+		input: TInput,
+		sromSourceResults: SROMSourceResult[]
 	) => void;
 
 	getSROMSourceFiles?: (
 		rootDir: string,
-		input: T,
-		sromTiles: SROMTileMatrix[]
+		input: TInput,
+		sromSourceResults: SROMSourceResult[]
 	) => FileToWrite[];
 };

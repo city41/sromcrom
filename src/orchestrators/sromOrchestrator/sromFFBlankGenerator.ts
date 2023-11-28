@@ -31,17 +31,18 @@ const sromFFBlankGenerator: ISROMGenerator = {
 	jsonKey: 'ignored',
 	getSROMSources(_rootDir, _jsonSpec) {
 		return [
-			[
-				[
-					{
-						canvasSource: BLANK_TILE_CANVAS,
-					},
+			{
+				tiles: [
+					[
+						{
+							canvasSource: BLANK_TILE_CANVAS,
+							sromIndex: 0xff,
+						},
+					],
 				],
-			],
+				input: 'sromFFBlankGenerator',
+			},
 		];
-	},
-	setSROMPositions(_rootDir, _jsonSpec, sromTiles) {
-		sromTiles[0][0][0]!.sromIndex = 0xff;
 	},
 };
 

@@ -1,6 +1,6 @@
 import { SROMTile } from '../../api/srom/types';
 import { JsonInput } from '../../types';
-import { GeneratorWithSROMTiles } from './types';
+import { GeneratorWithSROMSourceResults } from './types';
 
 function sortBySromIndex(a: SROMTile, b: SROMTile): number {
 	if (a.sromIndex === undefined && b.sromIndex === undefined) {
@@ -21,17 +21,22 @@ function sortBySromIndex(a: SROMTile, b: SROMTile): number {
 function positionSroms(
 	rootDir: string,
 	json: JsonInput,
-	inputs: GeneratorWithSROMTiles[]
+	inputs: GeneratorWithSROMSourceResults[]
 ) {
 	inputs.forEach((input) => {
 		if (input.generator.setSROMPositions) {
-			input.generator.setSROMPositions(rootDir, json, input.tiles);
+			input.generator.setSROMPositions(
+				rootDir,
+				json[input.generator.jsonKey as keyof JsonInput],
+				input.sromSourceResults
+			);
 		}
 	});
 
 	const allTiles = inputs.reduce<SROMTile[]>((building, input) => {
-		const actualTiles = input.tiles
-			.flat(2)
+		const actualTiles = input.sromSourceResults
+			.map((ssr) => ssr.tiles)
+			.flat(3)
 			.filter((t) => t !== null) as SROMTile[];
 		return building.concat(actualTiles);
 	}, []);
@@ -49,17 +54,15 @@ function positionSroms(
 		alreadyPositioned.map((t) => t.sromIndex!)
 	);
 
-	// we start at 33 as it seems eyecatcher sometimes uses tiles from 0-32
-	// TODO: investigate this
-	let curAnywhereIndex = 33;
-
 	while (canGoAnywhere.length > 0) {
-		while (alreadyUsedIndices.has(curAnywhereIndex)) {
-			++curAnywhereIndex;
+		let openIndex = 0;
+		while (alreadyUsedIndices.has(openIndex)) {
+			openIndex += 1;
 		}
 
 		const tile = canGoAnywhere.shift();
-		tile!.sromIndex = curAnywhereIndex++;
+		tile!.sromIndex = openIndex;
+		alreadyUsedIndices.add(openIndex);
 	}
 }
 

@@ -102,6 +102,7 @@ export type EyeCatcherJsonSpec = t.TypeOf<typeof EyeCatcherJsonSpec>;
 const SromImageInput = t.type({
 	name: t.string,
 	imageFile: t.string,
+	startingIndex: t.union([t.number, t.null, t.undefined]),
 });
 export type SromImageInput = t.TypeOf<typeof SromImageInput>;
 

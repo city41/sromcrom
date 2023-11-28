@@ -8,7 +8,12 @@ import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
 import type { ICROMGenerator } from '../../api/crom/types';
-import { ISROMGenerator, SROMTile, SROMTileMatrix } from '../../api/srom/types';
+import {
+	ISROMGenerator,
+	SROMSourceResult,
+	SROMTile,
+	SROMTileMatrix,
+} from '../../api/srom/types';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
 import { SROM_TILE_SIZE_PX } from '../../api/srom/constants';
 import { isEqual } from 'lodash';
@@ -160,6 +165,9 @@ function getSROMSource(imagePath: string, expectedSize: Size): SROMTileMatrix {
 				tile.palette = EYECATCHER_PALETTE;
 				tile.emitPalette = false;
 				tile.paletteIgnoresDarkBit = true;
+				// make sure eyecatcher tiles clobber any other tile
+				// that wants the same position
+				tile.priority = Number.MAX_SAFE_INTEGER;
 			}
 		});
 	});
@@ -204,7 +212,7 @@ function isTileBlank(tile: SROMTile | null): boolean {
 }
 
 const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
-	ISROMGenerator<EyeCatcherJsonSpec> = {
+	ISROMGenerator<EyeCatcherJsonSpec, string> = {
 	jsonKey: 'eyecatcher',
 
 	getCROMSources(rootDir, input) {
@@ -269,15 +277,16 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 			copyrightCharacterImageFile,
 		} = input;
 
-		const sources: SROMTileMatrix[] = [];
+		const sources: SROMSourceResult[] = [];
 
 		if (max330MegaImageFile) {
-			sources.push(
-				getSROMSource(
+			sources.push({
+				tiles: getSROMSource(
 					path.resolve(rootDir, max330MegaImageFile),
 					EYECATCHER_MAX_330_MEGA_SIZE_PX
-				)
-			);
+				),
+				input: max330MegaImageFile,
+			});
 		}
 
 		if (proGearSpecImageFile) {
@@ -285,7 +294,6 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 				path.resolve(rootDir, proGearSpecImageFile),
 				EYECATCHER_PRO_GEAR_SPEC_SIZE_PX
 			);
-			sources.push(proGearSource);
 
 			const tileAtFF = proGearSource[0][4];
 			if (!isTileBlank(tileAtFF)) {
@@ -293,24 +301,31 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 					'proGearSpecImageFile: the tile that will be placed at 0xff in the SROM binary (at {64px,0px} in the image) is not fully blank. That tile will be drawn over the entire fix layer in many situations. It should be an entirely magenta tile.'
 				);
 			}
+
+			sources.push({
+				tiles: proGearSource,
+				input: proGearSpecImageFile,
+			});
 		}
 
 		if (snkLogoImageFile) {
-			sources.push(
-				getSROMSource(
+			sources.push({
+				tiles: getSROMSource(
 					path.resolve(rootDir, snkLogoImageFile),
 					EYECATCHER_COMPANY_LOGO_SIZE_PX
-				)
-			);
+				),
+				input: snkLogoImageFile,
+			});
 		}
 
 		if (copyrightCharacterImageFile) {
-			sources.push(
-				getSROMSource(
+			sources.push({
+				tiles: getSROMSource(
 					path.resolve(rootDir, copyrightCharacterImageFile),
 					EYECATCHER_COPYRIGHT_SIZE_PX
-				)
-			);
+				),
+				input: copyrightCharacterImageFile,
+			});
 		}
 
 		return sources;
@@ -336,62 +351,47 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 		}
 	},
 
-	setSROMPositions(_rootDir, _json, sromTiles) {
-		// TODO: use the json to figure out which images are present
-		// but this approach is safe because sromTiles will only contain eyecatcher tiles
-
-		const max330Image = sromTiles.find((i) => {
-			return (
-				i.length === EYECATCHER_MAX_330_MEGA_SIZE_TILES.height &&
-				i[0].length === EYECATCHER_MAX_330_MEGA_SIZE_TILES.width
-			);
+	setSROMPositions(_rootDir, eyecatcherJson, sromSourceResults) {
+		const max330Image = sromSourceResults.find((ssr) => {
+			return ssr.input === eyecatcherJson.max330MegaImageFile;
 		});
 
 		if (max330Image) {
 			setSROMPositions(
-				max330Image as SROMTile[][],
+				max330Image.tiles as SROMTile[][],
 				MAX_330_MEGA_TILE_POSITIONS
 			);
 		}
 
-		const proGearImage = sromTiles.find((i) => {
-			return (
-				i.length === EYECATCHER_PRO_GEAR_SPEC_SIZE_TILES.height &&
-				i[0].length === EYECATCHER_PRO_GEAR_SPEC_SIZE_TILES.width
-			);
+		const proGearImage = sromSourceResults.find((ssr) => {
+			return ssr.input === eyecatcherJson.proGearSpecImageFile;
 		});
 
 		if (proGearImage) {
 			setSROMPositions(
-				proGearImage as SROMTile[][],
+				proGearImage.tiles as SROMTile[][],
 				PRO_GEAR_SPEC_TILE_POSITIONS
 			);
 		}
 
-		const companyImage = sromTiles.find((i) => {
-			return (
-				i.length === EYECATCHER_COMPANY_LOGO_SIZE_TILES.height &&
-				i[0].length === EYECATCHER_COMPANY_LOGO_SIZE_TILES.width
-			);
+		const companyImage = sromSourceResults.find((ssr) => {
+			return ssr.input === eyecatcherJson.snkLogoImageFile;
 		});
 
 		if (companyImage) {
 			setSROMPositions(
-				companyImage as SROMTile[][],
+				companyImage.tiles as SROMTile[][],
 				COMPANY_LOGO_TILE_POSITIONS
 			);
 		}
 
-		const copyrightImage = sromTiles.find((i) => {
-			return (
-				i.length === EYECATCHER_COPYRIGHT_SIZE_TILES.height &&
-				i[0].length === EYECATCHER_COPYRIGHT_SIZE_TILES.width
-			);
+		const copyrightImage = sromSourceResults.find((ssr) => {
+			return ssr.input === eyecatcherJson.copyrightCharacterImageFile;
 		});
 
 		if (copyrightImage) {
 			setSROMPositions(
-				copyrightImage as SROMTile[][],
+				copyrightImage.tiles as SROMTile[][],
 				COPYRIGHT_TILE_POSITIONS
 			);
 		}

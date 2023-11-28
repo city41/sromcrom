@@ -1,7 +1,11 @@
 import path from 'path';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
-import { ISROMGenerator, SROMTileMatrix } from '../../api/srom/types';
+import {
+	ISROMGenerator,
+	SROMSourceResult,
+	SROMTileMatrix,
+} from '../../api/srom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { SromImageInput, SromImagesJsonSpec } from '../../types';
 import { emit } from '../../emit/emit';
@@ -36,20 +40,22 @@ function toCodeEmitTiles(inputTiles: SROMTileMatrix): CodeEmitTileMatrix {
 }
 
 function createImageDataForCodeEmit(
-	inputs: SromImageInput[],
-	tiles: SROMTileMatrix[]
+	sromSourceResults: SROMSourceResult<SromImageInput>[]
 ): CodeEmitImage[] {
-	const finalTiles = denormalizeDupes(tiles, 'sromIndex');
+	const finalTiles = denormalizeDupes(
+		sromSourceResults.map((ssr) => ssr.tiles),
+		'sromIndex'
+	);
 
-	return inputs.map((input, i) => {
+	return sromSourceResults.map((ssr, i) => {
 		return {
-			...input,
+			...ssr.input,
 			tiles: toCodeEmitTiles(finalTiles[i]),
 		};
 	});
 }
 
-const sromImages: ISROMGenerator<SromImagesJsonSpec> = {
+const sromImages: ISROMGenerator<SromImagesJsonSpec, SromImageInput> = {
 	jsonKey: 'sromImages',
 
 	getSROMSources(rootDir, input) {
@@ -60,14 +66,39 @@ const sromImages: ISROMGenerator<SromImagesJsonSpec> = {
 				path.resolve(rootDir, input.imageFile)
 			);
 
-			return extractSromTileSources(context);
+			const tiles = extractSromTileSources(context);
+			return {
+				tiles,
+				input,
+			};
 		});
 	},
 
-	getSROMSourceFiles(rootDir, input, tiles) {
-		const { inputs, codeEmit } = input;
+	setSROMPositions(
+		_rootDir,
+		_input,
+		sromSourceResults: SROMSourceResult<SromImageInput>[]
+	) {
+		const toBePositioned = sromSourceResults.filter(
+			(ssr) => typeof ssr.input.startingIndex === 'number'
+		);
 
-		const images = createImageDataForCodeEmit(inputs, tiles);
+		toBePositioned.forEach((ssr) => {
+			let i = ssr.input.startingIndex!;
+			ssr.tiles.forEach((col) => {
+				col.forEach((tile) => {
+					if (tile) {
+						tile.sromIndex = i++;
+					}
+				});
+			});
+		});
+	},
+
+	getSROMSourceFiles(rootDir, input, sromSourceResults) {
+		const { codeEmit } = input;
+
+		const images = createImageDataForCodeEmit(sromSourceResults);
 
 		return emit(rootDir, codeEmit, { images });
 	},

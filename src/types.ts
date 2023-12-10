@@ -123,11 +123,18 @@ export type SromImagesJsonSpec = t.TypeOf<typeof SromImagesJsonSpec>;
 // type TilesetInput = {
 // 	name: string;
 // 	imageFile: string;
+//  autoAnimation?: 4 | 8;
 // };
-const TilesetInput = t.type({
-	name: t.string,
-	imageFile: t.string,
-});
+const TilesetInput = t.intersection([
+	t.type({
+		name: t.string,
+		imageFile: t.string,
+	}),
+	t.partial({
+		autoAnimation: t.union([t.literal(4), t.literal(8), t.null, t.undefined]),
+	}),
+	t.UnknownRecord,
+]);
 export type TilesetInput = t.TypeOf<typeof TilesetInput>;
 
 // type TilesetsJsonSpec = {
@@ -147,8 +154,7 @@ export type TilesetsJsonSpec = t.TypeOf<typeof TilesetsJsonSpec>;
 // type CromImageInput = {
 // 	name: string;
 // 	imageFile: string;
-// 	tileWidth?: number;
-// 	autoAnimation?: number;
+// 	autoAnimation?: 4 | 8;
 // 	[key: string]: unknown;
 // };
 const CromImageInput = t.intersection([
@@ -157,8 +163,7 @@ const CromImageInput = t.intersection([
 		imageFile: t.string,
 	}),
 	t.partial({
-		tileWidth: t.union([t.number, t.null, t.undefined]),
-		autoAnimation: t.union([t.number, t.null, t.undefined]),
+		autoAnimation: t.union([t.literal(4), t.literal(8), t.null, t.undefined]),
 	}),
 	t.UnknownRecord,
 ]);

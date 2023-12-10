@@ -1,8 +1,10 @@
 import path from 'path';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
-import { CROMTileMatrix, ICROMGenerator } from '../../api/crom/types';
+import { CROMTile, CROMTileMatrix, ICROMGenerator } from '../../api/crom/types';
+import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
+import { sliceOutFrame } from '../../api/tile/sliceOutFrame';
 import { TilesetInput, TilesetsJsonSpec } from '../../types';
 import { emit } from '../../emit/emit';
 
@@ -21,16 +23,54 @@ type CodeEmitImage = {
 	tiles: CodeEmitTileMatrix;
 };
 
-function toCodeEmitTiles(inputTiles: CROMTileMatrix): CodeEmitTileMatrix {
+function applyChildTiles(
+	masterFrame: CROMTile[][],
+	childFrames: CROMTile[][][]
+) {
+	for (let f = 0; f < childFrames.length; ++f) {
+		for (let y = 0; y < childFrames[f].length; ++y) {
+			for (let x = 0; x < childFrames[f][y].length; ++x) {
+				if (masterFrame[y][x]) {
+					// @ts-expect-error it wants this array to already be 3 or 7 in size
+					masterFrame[y][x].childAnimationFrames ??= [];
+					masterFrame[y][x].childAnimationFrames!.push(childFrames[f][y][x]);
+					childFrames[f][y][x].childOf = masterFrame[y][x];
+				}
+			}
+		}
+	}
+}
+
+function toCodeEmitTiles(
+	input: TilesetInput,
+	inputTiles: CROMTileMatrix
+): CodeEmitTileMatrix {
+	// if this tileset is an auto animation, then the inputTiles has all the frames of the animation,
+	// but for code emit, we want to treat it just like an image, so just slice out the first frame
+	// and ignore the others. They got emitted into the crom properly
+	if (input.autoAnimation) {
+		const canvasWidthInTiles = inputTiles[0].length;
+		const frameWidthInTiles = canvasWidthInTiles / input.autoAnimation;
+		inputTiles = sliceOutFrame(inputTiles, 0, frameWidthInTiles);
+	}
+
 	return inputTiles.map((inputRow) => {
 		return inputRow.map((inputTile) => {
 			if (inputTile === null) {
 				return null;
 			}
 
+			const childFrameCount = inputTile.childAnimationFrames?.length;
+
+			const autoAnimation = (childFrameCount && childFrameCount + 1) as
+				| 4
+				| 8
+				| undefined;
+
 			return {
 				index: inputTile.cromIndex!,
 				paletteIndex: inputTile.paletteIndex!,
+				autoAnimation,
 			};
 		});
 	});
@@ -45,7 +85,7 @@ function createTilesetDataForCodeEmit(
 	return inputs.map((input, i) => {
 		return {
 			...input,
-			tiles: toCodeEmitTiles(finalTiles[i]),
+			tiles: toCodeEmitTiles(input, finalTiles[i]),
 		};
 	});
 }
@@ -60,7 +100,33 @@ const tilesets: ICROMGenerator<TilesetsJsonSpec> = {
 				path.resolve(rootDir, input.imageFile)
 			);
 
-			return extractCromTileSources(context);
+			const allTiles = extractCromTileSources(context);
+
+			if (input.autoAnimation) {
+				const canvasWidthInTiles = context.canvas.width / CROM_TILE_SIZE_PX;
+				const frameWidthInTiles = canvasWidthInTiles / input.autoAnimation;
+				const leftoverTiles = canvasWidthInTiles % input.autoAnimation;
+
+				if (leftoverTiles !== 0) {
+					throw new Error(
+						`tilesets: ${input.name} (${input.imageFile}) is an auto animation of ${input.autoAnimation} but its tile width is not a multiple of that`
+					);
+				}
+
+				const frames: CROMTileMatrix[] = [];
+
+				for (let x = 0; x < canvasWidthInTiles; x += frameWidthInTiles) {
+					const frame = sliceOutFrame(allTiles, x, x + frameWidthInTiles);
+					frames.push(frame);
+				}
+
+				applyChildTiles(
+					frames[0] as CROMTile[][],
+					frames.slice(1) as CROMTile[][][]
+				);
+			}
+
+			return allTiles;
 		});
 	},
 	getCROMSourceFiles(rootDir, input, tiles) {

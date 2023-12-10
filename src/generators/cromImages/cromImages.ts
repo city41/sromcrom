@@ -5,10 +5,7 @@ import { ICROMGenerator, CROMTile, CROMTileMatrix } from '../../api/crom/types';
 import { CROM_TILE_SIZE_PX } from '../..//api/crom/constants';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { sliceOutFrame } from '../../api/tile/sliceOutFrame';
-import {
-	CromImageInput,
-	CromImagesInputJsonSpec
-} from '../../types';
+import { CromImageInput, CromImagesInputJsonSpec } from '../../types';
 import { emit } from '../../emit/emit';
 
 type CodeEmitTile = {
@@ -51,7 +48,9 @@ function toCodeEmitTiles(
 	// but for code emit, we want to treat it just like an image, so just slice out the first frame
 	// and ignore the others. They got emitted into the crom properly
 	if (input.autoAnimation) {
-		inputTiles = sliceOutFrame(inputTiles, 0, input.tileWidth ?? 1);
+		const canvasWidthInTiles = inputTiles[0].length;
+		const frameWidthInTiles = canvasWidthInTiles / input.autoAnimation;
+		inputTiles = sliceOutFrame(inputTiles, 0, frameWidthInTiles);
 	}
 
 	return inputTiles.map((inputRow) => {
@@ -69,7 +68,7 @@ function toCodeEmitTiles(
 }
 
 function getCustomPropObject(input: CromImageInput): Record<string, unknown> {
-	const { name, imageFile, tileWidth, ...custom } = input;
+	const { name, imageFile, tileWidth, autoAnimation, ...custom } = input;
 	return custom;
 }
 
@@ -102,13 +101,13 @@ const cromImages: ICROMGenerator<CromImagesInputJsonSpec> = {
 			const allTiles = extractCromTileSources(context);
 
 			if (input.autoAnimation) {
-				const tileWidth = input.tileWidth ?? 1;
 				const canvasWidthInTiles = context.canvas.width / CROM_TILE_SIZE_PX;
-				const frameCount = canvasWidthInTiles / tileWidth;
+				const frameWidthInTiles = canvasWidthInTiles / input.autoAnimation;
+				const leftoverTiles = canvasWidthInTiles % input.autoAnimation;
 
-				if (frameCount !== input.autoAnimation) {
+				if (leftoverTiles !== 0) {
 					throw new Error(
-						`cromImages: ${input.name} (${input.imageFile}) is an auto animation of ${input.autoAnimation} but has ${frameCount} frames`
+						`cromImages: ${input.name} (${input.imageFile}) is an auto animation of ${input.autoAnimation} but its tile width is not a multiple of that`
 					);
 				}
 
@@ -120,8 +119,8 @@ const cromImages: ICROMGenerator<CromImagesInputJsonSpec> = {
 
 				const frames: CROMTileMatrix[] = [];
 
-				for (let x = 0; x < canvasWidthInTiles; x += tileWidth) {
-					const frame = sliceOutFrame(allTiles, x, x + tileWidth);
+				for (let x = 0; x < canvasWidthInTiles; x += frameWidthInTiles) {
+					const frame = sliceOutFrame(allTiles, x, x + frameWidthInTiles);
 					frames.push(frame);
 				}
 

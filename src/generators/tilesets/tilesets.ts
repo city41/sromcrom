@@ -27,10 +27,17 @@ function applyChildTiles(
 	masterFrame: CROMTile[][],
 	childFrames: CROMTile[][][]
 ) {
-	for (let f = 0; f < childFrames.length; ++f) {
-		for (let y = 0; y < childFrames[f].length; ++y) {
-			for (let x = 0; x < childFrames[f][y].length; ++x) {
-				if (masterFrame[y][x]) {
+	for (let y = 0; y < masterFrame.length; ++y) {
+		for (let x = 0; x < masterFrame[y].length; ++x) {
+			// if they are all the same, no need to make this an autoAnimation
+			const allFrameTilessAreEqual = childFrames.every((cf) => {
+				return (
+					cf[y][x].canvasSource.toDataURL() ===
+					masterFrame[y][x].canvasSource.toDataURL()
+				);
+			});
+			if (!allFrameTilessAreEqual) {
+				for (let f = 0; f < childFrames.length; ++f) {
 					// @ts-expect-error it wants this array to already be 3 or 7 in size
 					masterFrame[y][x].childAnimationFrames ??= [];
 					masterFrame[y][x].childAnimationFrames!.push(childFrames[f][y][x]);

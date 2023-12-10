@@ -13,7 +13,7 @@ type DupableTile = {
 	duplicateOf?: DupableTile;
 };
 
-type MatrixRow<T extends DupableTile> = Array<T | null>;
+type MatrixRow<T extends DupableTile> = T[];
 type Matrix<T extends DupableTile> = MatrixRow<T>[];
 
 export function denormalizeDupes<T extends DupableTile>(

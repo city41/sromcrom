@@ -1,8 +1,9 @@
 import path from 'path';
 import { CanvasRenderingContext2D } from 'canvas';
+import isEqual from 'lodash/isEqual';
 import {
 	TRANSPARENT_16BIT_COLOR,
-	TRANSPARENT_24BIT_COLOR,
+	TRANSPARENT_VIA_MAGENTA_24BIT_COLOR,
 } from '../../api/palette/colors';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
@@ -16,7 +17,6 @@ import {
 } from '../../api/srom/types';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
 import { SROM_TILE_SIZE_PX } from '../../api/srom/constants';
-import { isEqual } from 'lodash';
 import { EyeCatcherJsonSpec } from '../../types';
 import { Palette16Bit } from '../../api/palette/types';
 import { get24BitPalette } from '../../api/palette/get24BitPalette';
@@ -187,11 +187,7 @@ function setSROMPositions(sromTiles: SROMTile[][], positions: number[][]) {
 	}
 }
 
-function isTileBlank(tile: SROMTile | null): boolean {
-	if (tile === null) {
-		return false;
-	}
-
+function isTileBlank(tile: SROMTile): boolean {
 	const context = tile.canvasSource.getContext('2d');
 	const imageData = context.getImageData(
 		0,
@@ -201,9 +197,12 @@ function isTileBlank(tile: SROMTile | null): boolean {
 	);
 
 	for (let p = 0; p < imageData.data.length; p += 4) {
-		const pixel = Array.from(imageData.data.slice(p, p + 4));
+		const color = Array.from(imageData.data.slice(p, p + 4));
 
-		if (!isEqual(pixel, TRANSPARENT_24BIT_COLOR)) {
+		if (
+			imageData.data[p + 3] !== 0 &&
+			!isEqual(color, TRANSPARENT_VIA_MAGENTA_24BIT_COLOR)
+		) {
 			return false;
 		}
 	}
@@ -298,7 +297,7 @@ const eyecatcher: ICROMGenerator<EyeCatcherJsonSpec> &
 			const tileAtFF = proGearSource[0][4];
 			if (!isTileBlank(tileAtFF)) {
 				throw new Error(
-					'proGearSpecImageFile: the tile that will be placed at 0xff in the SROM binary (at {64px,0px} in the image) is not fully blank. That tile will be drawn over the entire fix layer in many situations. It should be an entirely magenta tile.'
+					'proGearSpecImageFile: the tile that will be placed at 0xff in the SROM binary (at {32px,0px} in the image) is not fully blank. That tile will be drawn over the entire fix layer in many situations. It should be an entirely transparent or magenta tile.'
 				);
 			}
 

@@ -4,9 +4,9 @@ import {
 	BLACK24,
 	GREEN16,
 	GREEN24,
-	MAGENTA16,
 	RED16,
 	RED24,
+	TRANSPARENT_16BIT_COLOR,
 	WHITE16,
 	WHITE24,
 } from '../../../api/palette/colors';
@@ -21,7 +21,7 @@ describe('determinePalettesToEmit', function () {
 
 		const result = determinePalettesToEmit([tile], 0);
 
-		const expectedSourcePalette = [MAGENTA16, BLACK16, RED16];
+		const expectedSourcePalette = [TRANSPARENT_16BIT_COLOR, BLACK16, RED16];
 
 		const expectedFinalPalette = expectedSourcePalette.concat(
 			new Array(13).fill(BLACK16)
@@ -55,7 +55,13 @@ describe('determinePalettesToEmit', function () {
 
 		const result = determinePalettesToEmit([tile1, tile2, tile3], 33);
 
-		const expectedPalette = [MAGENTA16, GREEN16, WHITE16, BLACK16, RED16];
+		const expectedPalette = [
+			TRANSPARENT_16BIT_COLOR,
+			GREEN16,
+			WHITE16,
+			BLACK16,
+			RED16,
+		];
 
 		for (let i = 0; i < expectedPalette.length; ++i) {
 			expect(result[0][i]).toEqual(expectedPalette[i]);

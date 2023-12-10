@@ -17,7 +17,7 @@ type CodeEmitTile = {
 	paletteIndex: number;
 };
 
-type CodeEmitTileMatrixRow = Array<CodeEmitTile | null>;
+type CodeEmitTileMatrixRow = CodeEmitTile[];
 type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
 
 type CodeEmitAnimation = {
@@ -36,10 +36,6 @@ type CodeEmitAnimationGroup = {
 function toCodeEmitTiles(inputTiles: CROMTileMatrix): CodeEmitTileMatrix {
 	return inputTiles.map((inputRow) => {
 		return inputRow.map((inputTile) => {
-			if (inputTile === null) {
-				return null;
-			}
-
 			if (inputTile.cromIndex === undefined) {
 				throw new Error(
 					`toCodeEmitTiles: this tile is unpositioned, (dupe? ${!!inputTile.duplicateOf}, dupe index: ${

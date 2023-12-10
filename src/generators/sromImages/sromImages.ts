@@ -15,7 +15,7 @@ type CodeEmitTile = {
 	paletteIndex: number;
 };
 
-type CodeEmitTileMatrixRow = Array<CodeEmitTile | null>;
+type CodeEmitTileMatrixRow = CodeEmitTile[];
 type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
 
 type CodeEmitImage = {
@@ -27,10 +27,6 @@ type CodeEmitImage = {
 function toCodeEmitTiles(inputTiles: SROMTileMatrix): CodeEmitTileMatrix {
 	return inputTiles.map((inputRow) => {
 		return inputRow.map((inputTile) => {
-			if (inputTile === null) {
-				return null;
-			}
-
 			return {
 				index: inputTile.sromIndex!,
 				paletteIndex: inputTile.paletteIndex!,

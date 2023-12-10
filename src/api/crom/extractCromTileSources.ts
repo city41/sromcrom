@@ -1,6 +1,5 @@
 import { CanvasRenderingContext2D } from 'canvas';
 import { extractSubCanvas } from '../canvas/extractSubCanvas';
-import { isCanvasBlank } from '../canvas/isCanvasBlank';
 import { CROM_TILE_SIZE_PX } from './constants';
 import type { CROMTileMatrix, CROMTileMatrixRow } from './types';
 
@@ -21,11 +20,7 @@ export function extractCromTileSources(
 				CROM_TILE_SIZE_PX
 			);
 
-			if (isCanvasBlank(canvasSource)) {
-				row.push(null);
-			} else {
-				row.push({ canvasSource });
-			}
+			row.push({ canvasSource });
 		}
 
 		result.push(row);

@@ -29,17 +29,13 @@ function sortPalette(palette: Palette16Bit): Palette16Bit {
 	return uniq(cloned) as Palette16Bit;
 }
 
-function buildPaletteMap(tiles: Array<BaseTile | null>): PaletteMap {
+function buildPaletteMap(tiles: BaseTile[]): PaletteMap {
 	const intermediateMap = new Map<
 		PaletteString,
 		{ palette: Palette16Bit; tiles: BaseTile[] }
 	>();
 
 	tiles.forEach((tile) => {
-		if (!tile) {
-			return;
-		}
-
 		const palette24 = get24BitPalette(tile.canvasSource);
 		const palette16 = sortPalette(convertTo16BitPalette(palette24));
 
@@ -132,16 +128,12 @@ function findPalette(tile: BaseTile, paletteMap: PaletteMap): Palette16Bit {
 }
 
 function assignPalettes(
-	inputTiles: Array<BaseTile | null>,
+	inputTiles: BaseTile[],
 	paletteMap: PaletteMap,
 	finalPalettes: Palette16Bit[],
 	paletteStartIndex: number
 ) {
 	inputTiles.forEach((tile) => {
-		if (!tile) {
-			return;
-		}
-
 		const palette = findPalette(tile, paletteMap);
 		const paletteIndex = finalPalettes.indexOf(palette);
 
@@ -156,7 +148,7 @@ function assignPalettes(
 	});
 }
 
-function determinePalettesToEmit<TTile extends BaseTile | null>(
+function determinePalettesToEmit<TTile extends BaseTile>(
 	allTiles: TTile[],
 	paletteStartIndex: number
 ): Palette16Bit[] {

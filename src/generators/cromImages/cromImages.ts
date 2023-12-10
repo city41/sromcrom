@@ -14,7 +14,7 @@ type CodeEmitTile = {
 	autoAnimation?: 4 | 8;
 };
 
-type CodeEmitTileMatrixRow = Array<CodeEmitTile | null>;
+type CodeEmitTileMatrixRow = CodeEmitTile[];
 type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
 
 type CodeEmitImage = {
@@ -55,10 +55,6 @@ function toCodeEmitTiles(
 
 	return inputTiles.map((inputRow) => {
 		return inputRow.map((inputTile) => {
-			if (inputTile === null) {
-				return null;
-			}
-
 			return {
 				index: inputTile.cromIndex!,
 				paletteIndex: inputTile.paletteIndex!,

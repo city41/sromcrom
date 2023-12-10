@@ -1,6 +1,13 @@
 {
 	"romPathRoot": "./out/test-",
 	"padCROMFilesTo": 1048576,
+	"eyecatcher": {
+		"mainLogoImageFile": "./eyecatcher_mainLogo.png",
+		"max330MegaImageFile": "./eyecatcher_max330.png",
+		"proGearSpecImageFile": "./eyecatcher_progear.png",
+		"snkLogoImageFile": "./eyecatcher_companyLogo.png",
+		"copyrightCharacterImageFile": "./eyecatcher_copyright.png"
+	},
 	"sromImages": {
 		"inputs": [
 			{

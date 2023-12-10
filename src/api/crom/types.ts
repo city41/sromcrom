@@ -44,7 +44,7 @@ export type CROMTile = BaseTile & {
 	cromIndex?: number;
 };
 
-export type CROMTileMatrixRow = Array<CROMTile | null>;
+export type CROMTileMatrixRow = CROMTile[];
 export type CROMTileMatrix = CROMTileMatrixRow[];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

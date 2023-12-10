@@ -23,7 +23,7 @@ export type SROMTile = BaseTile & {
 	priority?: number;
 };
 
-export type SROMTileMatrixCol = Array<SROMTile | null>;
+export type SROMTileMatrixCol = SROMTile[];
 export type SROMTileMatrix = SROMTileMatrixCol[];
 
 export type SROMSourceResult<TInput = any> = {

@@ -1,7 +1,7 @@
 import { Canvas } from 'canvas';
 import { Color24Bit, Palette24Bit } from './types';
 import uniqBy from 'lodash/uniqBy';
-import { TRANSPARENT_24BIT_COLOR } from './colors';
+import { TRANSPARENT_VIA_MAGENTA_24BIT_COLOR } from './colors';
 import { isEqual } from 'lodash';
 
 export function raw24BitColorToString(r24c: Color24Bit): string {
@@ -19,11 +19,13 @@ export function get24BitPalette(canvas: Canvas): Palette24Bit {
 		colors.push(Array.from(rgbImageData.slice(i, i + 4)) as Color24Bit);
 	}
 
-	// make sure all palettes have magenta/transparent
-	// first remove it if present
-	colors = colors.filter((c) => !isEqual(c, TRANSPARENT_24BIT_COLOR));
+	// make sure all palettes have transparent
+	// first remove it if present, both versions: true transparent and magenta
+	colors = colors.filter(
+		(c) => !isEqual(c, TRANSPARENT_VIA_MAGENTA_24BIT_COLOR) && c[3] === 255
+	);
 	// then add transparent, ensuring it stays in the front
-	colors.unshift(TRANSPARENT_24BIT_COLOR);
+	colors.unshift(TRANSPARENT_VIA_MAGENTA_24BIT_COLOR);
 	// make sure all colors are unique
 	colors = uniqBy(colors, raw24BitColorToString) as Palette24Bit;
 

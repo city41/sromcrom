@@ -26,9 +26,14 @@ function getIndexedData(
 			rawImageData.slice(i, i + 4)
 		) as Color24Bit;
 
-		const currentColor16 = convertColor(currentColor24);
-
-		const index = palette.indexOf(currentColor16);
+		let index;
+		if (currentColor24[3] !== 255) {
+			// any transparent color gets set to zero, which is transparent in neo geo palettes
+			index = 0;
+		} else {
+			const currentColor16 = convertColor(currentColor24);
+			index = palette.indexOf(currentColor16);
+		}
 
 		if (index === undefined) {
 			throw new Error(
@@ -99,7 +104,7 @@ function convertToSromFormat(indexedData: number[]): number[] {
 export function setSROMBinaryData(tile: SROMTile): SROMTile {
 	if (!tile.palette) {
 		throw new Error(
-			'getSROMBinaryData called with a tile that lacks a palette'
+			'setSROMBinaryData called with a tile that lacks a palette'
 		);
 	}
 

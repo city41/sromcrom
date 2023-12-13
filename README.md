@@ -9,18 +9,19 @@ Sromcrom allows you to generate code using handlebars templates, so it has almos
 ## Features
 
 - complete eyecatcher support.
-- ensures srom tile 0xFF is empty as required by the system
+- ensures the srom and crom tiles at 0xFF are empty as required by the system
   - this assurance is met whether or not you specify an eyecatcher
 - crom auto animation tiles are placed at proper boundaries
 - tile deduping for both srom and crom
 - frame based crom animations
+- tileset auto animations
+  - tilesets are typically used to from backgrounds
 - merging of palettes
 - ensures the first color of palette zero is the required black
 - code generation via handlebars templates
 
 ### Features to come
 
-- aseprite support
 - alternate palettes
 - frame based srom animations
 - documentation

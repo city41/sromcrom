@@ -75,6 +75,4 @@ if (resourceJson.codeEmit) {
 	filesToWrite.push(...codeEmitFilesToWrite);
 }
 
-writeFiles(
-	cromOrchestrateResult.filesToWrite.concat(sromOrchestrateResult.filesToWrite)
-);
+writeFiles(filesToWrite);

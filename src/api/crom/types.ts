@@ -1,4 +1,3 @@
-import { FileToWrite } from '../../types';
 import { BaseTile } from '../tile/markDupes';
 
 export type FourAutoAnimationChildFrames = [CROMTile, CROMTile, CROMTile];
@@ -48,20 +47,20 @@ export type CROMTileMatrixRow = CROMTile[];
 export type CROMTileMatrix = CROMTileMatrixRow[];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ICROMGenerator<T = any> = {
+export type ICROMGenerator<TInput = any, TCEmit = any> = {
 	jsonKey: string;
 
-	getCROMSources: (rootDir: string, input: T) => CROMTileMatrix[];
+	getCROMSources: (rootDir: string, input: TInput) => CROMTileMatrix[];
 
 	setCROMPositions?: (
 		rootDir: string,
-		input: T,
+		input: TInput,
 		cromTiles: CROMTileMatrix[]
 	) => void;
 
-	getCROMSourceFiles?: (
+	getCodeEmitData?: (
 		rootDir: string,
-		input: T,
+		input: TInput,
 		cromTiles: CROMTileMatrix[]
-	) => FileToWrite[];
+	) => TCEmit;
 };

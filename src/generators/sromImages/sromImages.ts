@@ -8,7 +8,6 @@ import {
 } from '../../api/srom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { SromImageInput, SromImagesJsonSpec } from '../../types';
-import { emit } from '../../emit/emit';
 
 type CodeEmitTile = {
 	index: number;
@@ -18,7 +17,7 @@ type CodeEmitTile = {
 type CodeEmitTileMatrixRow = CodeEmitTile[];
 type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
 
-type CodeEmitImage = {
+export type CodeEmitSromImage = {
 	name: string;
 	imageFile: string;
 	tiles: CodeEmitTileMatrix;
@@ -37,7 +36,7 @@ function toCodeEmitTiles(inputTiles: SROMTileMatrix): CodeEmitTileMatrix {
 
 function createImageDataForCodeEmit(
 	sromSourceResults: SROMSourceResult<SromImageInput>[]
-): CodeEmitImage[] {
+): CodeEmitSromImage[] {
 	const finalTiles = denormalizeDupes(
 		sromSourceResults.map((ssr) => ssr.tiles),
 		'sromIndex'
@@ -51,12 +50,14 @@ function createImageDataForCodeEmit(
 	});
 }
 
-const sromImages: ISROMGenerator<SromImagesJsonSpec, SromImageInput> = {
+const sromImages: ISROMGenerator<
+	SromImagesJsonSpec,
+	SromImageInput,
+	CodeEmitSromImage[]
+> = {
 	jsonKey: 'sromImages',
 
-	getSROMSources(rootDir, input) {
-		const { inputs } = input;
-
+	getSROMSources(rootDir, inputs) {
 		return inputs.map((input) => {
 			const context = getCanvasContextFromImagePath(
 				path.resolve(rootDir, input.imageFile)
@@ -91,12 +92,8 @@ const sromImages: ISROMGenerator<SromImagesJsonSpec, SromImageInput> = {
 		});
 	},
 
-	getSROMSourceFiles(rootDir, input, sromSourceResults) {
-		const { codeEmit } = input;
-
-		const images = createImageDataForCodeEmit(sromSourceResults);
-
-		return emit(rootDir, codeEmit, { images });
+	getCodeEmitData(_rootDir, _input, sromSourceResults) {
+		return createImageDataForCodeEmit(sromSourceResults);
 	},
 };
 

@@ -10,7 +10,6 @@ import {
 	CromAnimationInput,
 	CromAnimationsInputJsonSpec,
 } from '../../types';
-import { emit } from '../../emit/emit';
 
 type CodeEmitTile = {
 	index: number;
@@ -28,7 +27,7 @@ type CodeEmitAnimation = {
 	custom: Record<string, unknown>;
 };
 
-type CodeEmitAnimationGroup = {
+export type CodeEmitCromAnimationGroup = {
 	name: string;
 	animations: CodeEmitAnimation[];
 };
@@ -95,7 +94,7 @@ function createAnimationDataForCodeEmit(
 	rootDir: string,
 	inputs: CromAnimationInput[],
 	tiles: CROMTileMatrix[]
-): CodeEmitAnimationGroup[] {
+): CodeEmitCromAnimationGroup[] {
 	const finalTiles = denormalizeDupes(tiles, 'cromIndex');
 
 	let sliceIndex = 0;
@@ -125,12 +124,13 @@ function createAnimationDataForCodeEmit(
 	});
 }
 
-const cromAnimations: ICROMGenerator<CromAnimationsInputJsonSpec> = {
+const cromAnimations: ICROMGenerator<
+	CromAnimationsInputJsonSpec,
+	CodeEmitCromAnimationGroup[]
+> = {
 	jsonKey: 'cromAnimations',
 
-	getCROMSources(rootDir, input) {
-		const { inputs } = input;
-
+	getCROMSources(rootDir, inputs) {
 		const inputAnimations = inputs.map((input) => {
 			return input.animations.reduce<CROMTileMatrix[]>(
 				(building, animation) => {
@@ -161,16 +161,14 @@ const cromAnimations: ICROMGenerator<CromAnimationsInputJsonSpec> = {
 		return inputAnimations.flat(1);
 	},
 
-	getCROMSourceFiles(rootDir, input, tiles) {
-		const { inputs, codeEmit } = input;
-
+	getCodeEmitData(rootDir, inputs, tiles) {
 		const animationGroups = createAnimationDataForCodeEmit(
 			rootDir,
 			inputs,
 			tiles
 		);
 
-		return emit(rootDir, codeEmit, { animationGroups });
+		return animationGroups;
 	},
 };
 

@@ -1,4 +1,4 @@
-import { BaseTile, FileToWrite } from '../../types';
+import { BaseTile } from '../../types';
 
 export type SROMTile = BaseTile & {
 	/**
@@ -32,7 +32,7 @@ export type SROMSourceResult<TInput = any> = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ISROMGenerator<TInput = any, TEntry = any> = {
+export type ISROMGenerator<TInput = any, TEntry = any, TCEmit = any> = {
 	jsonKey: string;
 
 	getSROMSources: (
@@ -46,9 +46,9 @@ export type ISROMGenerator<TInput = any, TEntry = any> = {
 		sromSourceResults: SROMSourceResult[]
 	) => void;
 
-	getSROMSourceFiles?: (
+	getCodeEmitData?: (
 		rootDir: string,
 		input: TInput,
 		sromSourceResults: SROMSourceResult[]
-	) => FileToWrite[];
+	) => TCEmit;
 };

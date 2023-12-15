@@ -3,7 +3,7 @@ import path from 'path';
 import { Palette16Bit } from '../../api/palette/types';
 import { ISROMGenerator, SROMTile } from '../../api/srom/types';
 import { determinePalettesToEmit } from '../common/determinePalettesToEmit';
-import { FileToWrite, JsonInput } from '../../types';
+import { FileToWrite, JsonInput, CodeEmitData } from '../../types';
 import { indexSroms } from './indexSroms';
 import { markSromDupes } from './markSromDupes';
 import { positionSroms } from './positionSroms';
@@ -22,7 +22,11 @@ function orchestrate(
 	rootDir: string,
 	input: JsonInput,
 	palettesStartingIndex: number
-): { palettesToEmit: Palette16Bit[]; filesToWrite: FileToWrite[] } {
+): {
+	palettesToEmit: Palette16Bit[];
+	filesToWrite: FileToWrite[];
+	codeEmitData: CodeEmitData;
+} {
 	const sromGenerators = availableSROMGenerators
 		.filter((generatorKey) => !!input[generatorKey as keyof JsonInput])
 		.map((generatorKey) => {
@@ -79,26 +83,26 @@ function orchestrate(
 		contents: Buffer.from(new Uint8Array(sromBinaryData)),
 	};
 
-	const otherFilesToWrite = sromSourcesResult.reduce<FileToWrite[]>(
+	const codeEmitData = sromSourcesResult.reduce<CodeEmitData>(
 		(building, sromResult) => {
-			if (sromResult.generator.getSROMSourceFiles) {
-				return building.concat(
-					sromResult.generator.getSROMSourceFiles(
+			if (sromResult.generator.getCodeEmitData) {
+				building[sromResult.generator.jsonKey as keyof CodeEmitData] =
+					sromResult.generator.getCodeEmitData(
 						rootDir,
 						input[sromResult.generator.jsonKey as keyof JsonInput],
 						sromResult.sromSourceResults
-					)
-				);
-			} else {
-				return building;
+					);
 			}
+
+			return building;
 		},
-		[]
+		{} as unknown as CodeEmitData
 	);
 
 	return {
 		palettesToEmit: finalPalettes,
-		filesToWrite: [sromFileToWrite].concat(otherFilesToWrite),
+		codeEmitData,
+		filesToWrite: [sromFileToWrite],
 	};
 }
 

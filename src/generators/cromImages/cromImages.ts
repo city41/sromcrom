@@ -6,7 +6,6 @@ import { CROM_TILE_SIZE_PX } from '../..//api/crom/constants';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { sliceOutFrame } from '../../api/tile/sliceOutFrame';
 import { CromImageInput, CromImagesInputJsonSpec } from '../../types';
-import { emit } from '../../emit/emit';
 
 type CodeEmitTile = {
 	index: number;
@@ -17,7 +16,7 @@ type CodeEmitTile = {
 type CodeEmitTileMatrixRow = CodeEmitTile[];
 type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
 
-type CodeEmitImage = {
+export type CodeEmitCromImage = {
 	name: string;
 	imageFile: string;
 	tiles: CodeEmitTileMatrix;
@@ -71,7 +70,7 @@ function getCustomPropObject(input: CromImageInput): Record<string, unknown> {
 function createImageDataForCodeEmit(
 	inputs: CromImageInput[],
 	tiles: CROMTileMatrix[]
-): CodeEmitImage[] {
+): CodeEmitCromImage[] {
 	const finalTiles = denormalizeDupes(tiles, 'cromIndex');
 
 	return inputs.map((input, i) => {
@@ -83,60 +82,55 @@ function createImageDataForCodeEmit(
 	});
 }
 
-const cromImages: ICROMGenerator<CromImagesInputJsonSpec> = {
-	jsonKey: 'cromImages',
+const cromImages: ICROMGenerator<CromImagesInputJsonSpec, CodeEmitCromImage[]> =
+	{
+		jsonKey: 'cromImages',
 
-	getCROMSources(rootDir, input) {
-		const { inputs } = input;
-
-		return inputs.map((input) => {
-			const context = getCanvasContextFromImagePath(
-				path.resolve(rootDir, input.imageFile)
-			);
-
-			const allTiles = extractCromTileSources(context);
-
-			if (input.autoAnimation) {
-				const canvasWidthInTiles = context.canvas.width / CROM_TILE_SIZE_PX;
-				const frameWidthInTiles = canvasWidthInTiles / input.autoAnimation;
-				const leftoverTiles = canvasWidthInTiles % input.autoAnimation;
-
-				if (leftoverTiles !== 0) {
-					throw new Error(
-						`cromImages: ${input.name} (${input.imageFile}) is an auto animation of ${input.autoAnimation} but its tile width is not a multiple of that`
-					);
-				}
-
-				if (allTiles.some((f) => f === null)) {
-					throw new Error(
-						`cromAnimations: ${input.name} (${input.imageFile}) is an auto animation of ${input.autoAnimation} but has blank frames. If a frame should be empty, use magenta instead of alpha=0`
-					);
-				}
-
-				const frames: CROMTileMatrix[] = [];
-
-				for (let x = 0; x < canvasWidthInTiles; x += frameWidthInTiles) {
-					const frame = sliceOutFrame(allTiles, x, x + frameWidthInTiles);
-					frames.push(frame);
-				}
-
-				applyChildTiles(
-					frames[0] as CROMTile[][],
-					frames.slice(1) as CROMTile[][][]
+		getCROMSources(rootDir, inputs) {
+			return inputs.map((input) => {
+				const context = getCanvasContextFromImagePath(
+					path.resolve(rootDir, input.imageFile)
 				);
-			}
 
-			return allTiles;
-		});
-	},
+				const allTiles = extractCromTileSources(context);
 
-	getCROMSourceFiles(rootDir, input, tiles) {
-		const { inputs, codeEmit } = input;
+				if (input.autoAnimation) {
+					const canvasWidthInTiles = context.canvas.width / CROM_TILE_SIZE_PX;
+					const frameWidthInTiles = canvasWidthInTiles / input.autoAnimation;
+					const leftoverTiles = canvasWidthInTiles % input.autoAnimation;
 
-		const images = createImageDataForCodeEmit(inputs, tiles);
+					if (leftoverTiles !== 0) {
+						throw new Error(
+							`cromImages: ${input.name} (${input.imageFile}) is an auto animation of ${input.autoAnimation} but its tile width is not a multiple of that`
+						);
+					}
 
-		return emit(rootDir, codeEmit, { images });
-	},
-};
+					if (allTiles.some((f) => f === null)) {
+						throw new Error(
+							`cromAnimations: ${input.name} (${input.imageFile}) is an auto animation of ${input.autoAnimation} but has blank frames. If a frame should be empty, use magenta instead of alpha=0`
+						);
+					}
+
+					const frames: CROMTileMatrix[] = [];
+
+					for (let x = 0; x < canvasWidthInTiles; x += frameWidthInTiles) {
+						const frame = sliceOutFrame(allTiles, x, x + frameWidthInTiles);
+						frames.push(frame);
+					}
+
+					applyChildTiles(
+						frames[0] as CROMTile[][],
+						frames.slice(1) as CROMTile[][][]
+					);
+				}
+
+				return allTiles;
+			});
+		},
+
+		getCodeEmitData(_rootDir, inputs, tiles) {
+			return createImageDataForCodeEmit(inputs, tiles);
+		},
+	};
 
 export { cromImages };

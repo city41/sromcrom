@@ -1,8 +1,20 @@
 import * as t from 'io-ts';
 import { Canvas } from 'canvas';
 import { Palette16Bit } from './api/palette/types';
+import { CodeEmitCromAnimationGroup } from './generators/cromAnimations';
+import { CodeEmitSromImage } from './generators/sromImages';
+import { CodeEmitTileset } from './generators/tilesets';
+import { CodeEmitCromImage } from './generators/cromImages';
 
 // these don't use io-ts as they are not part of the input
+export type CodeEmitData = {
+	palettes: Palette16Bit[];
+	sromImages: CodeEmitSromImage[];
+	tilesets: CodeEmitTileset[];
+	cromImages: CodeEmitCromImage[];
+	cromAnimations: CodeEmitCromAnimationGroup[];
+};
+
 export type FileToWrite = {
 	path: string;
 	contents: Buffer;
@@ -52,7 +64,7 @@ export type BaseTile = {
 // 		dest: string;
 // 	}>;
 // };
-const CodeEmit = t.intersection([
+const CodeEmitJsonSpec = t.intersection([
 	t.partial({
 		preEmit: t.union([t.string, t.null, t.undefined]),
 	}),
@@ -65,15 +77,7 @@ const CodeEmit = t.intersection([
 		),
 	}),
 ]);
-export type CodeEmit = t.TypeOf<typeof CodeEmit>;
-
-// type PalettesSpec = {
-// codeEmit?: CodeEmit;
-// };
-const PalettesSpec = t.partial({
-	codeEmit: t.union([CodeEmit, t.null, t.undefined]),
-});
-export type PalettesSpec = t.TypeOf<typeof PalettesSpec>;
+export type CodeEmitJsonSpec = t.TypeOf<typeof CodeEmitJsonSpec>;
 
 // type EyeCatcherJsonSpec = {
 // 	mainLogoImageFile: string;
@@ -106,18 +110,7 @@ const SromImageInput = t.type({
 });
 export type SromImageInput = t.TypeOf<typeof SromImageInput>;
 
-// type SromImagesJsonSpec = {
-// 	codeEmit?: CodeEmit;
-// 	inputs: SromImageInput[];
-// };
-const SromImagesJsonSpec = t.intersection([
-	t.partial({
-		codeEmit: t.union([CodeEmit, t.null, t.undefined]),
-	}),
-	t.type({
-		inputs: t.array(SromImageInput),
-	}),
-]);
+const SromImagesJsonSpec = t.array(SromImageInput);
 export type SromImagesJsonSpec = t.TypeOf<typeof SromImagesJsonSpec>;
 
 // type TilesetInput = {
@@ -137,18 +130,7 @@ const TilesetInput = t.intersection([
 ]);
 export type TilesetInput = t.TypeOf<typeof TilesetInput>;
 
-// type TilesetsJsonSpec = {
-// 	codeEmit?: CodeEmit;
-// 	inputs: TilesetInput[];
-// };
-const TilesetsJsonSpec = t.intersection([
-	t.partial({
-		codeEmit: t.union([CodeEmit, t.null, t.undefined]),
-	}),
-	t.type({
-		inputs: t.array(TilesetInput),
-	}),
-]);
+const TilesetsJsonSpec = t.array(TilesetInput);
 export type TilesetsJsonSpec = t.TypeOf<typeof TilesetsJsonSpec>;
 
 // type CromImageInput = {
@@ -169,18 +151,7 @@ const CromImageInput = t.intersection([
 ]);
 export type CromImageInput = t.TypeOf<typeof CromImageInput>;
 
-// type CromImagesInputJsonSpec = {
-// 	codeEmit?: CodeEmit;
-// 	inputs: CromImageInput[];
-// };
-const CromImagesInputJsonSpec = t.intersection([
-	t.partial({
-		codeEmit: t.union([CodeEmit, t.null, t.undefined]),
-	}),
-	t.type({
-		inputs: t.array(CromImageInput),
-	}),
-]);
+const CromImagesInputJsonSpec = t.array(CromImageInput);
 export type CromImagesInputJsonSpec = t.TypeOf<typeof CromImagesInputJsonSpec>;
 
 // type CromAnimation = {
@@ -213,18 +184,7 @@ const CromAnimationInput = t.type({
 });
 export type CromAnimationInput = t.TypeOf<typeof CromAnimationInput>;
 
-// type CromAnimationInputJsonSpec = {
-// 	codeEmit?: CodeEmit;
-// 	inputs: CromAnimationInput[];
-// };
-const CromAnimationsInputJsonSpec = t.intersection([
-	t.partial({
-		codeEmit: t.union([CodeEmit, t.null, t.undefined]),
-	}),
-	t.type({
-		inputs: t.array(CromAnimationInput),
-	}),
-]);
+const CromAnimationsInputJsonSpec = t.array(CromAnimationInput);
 export type CromAnimationsInputJsonSpec = t.TypeOf<
 	typeof CromAnimationsInputJsonSpec
 >;
@@ -232,7 +192,7 @@ export type CromAnimationsInputJsonSpec = t.TypeOf<
 // type JsonInput = {
 // 	romPathRoot: string;
 // 	padCROMFilesTo?: number;
-// 	palettes?: PalettesSpec;
+//  codeEmit?: CodeEmitSpec;
 // 	eyecatcher?: EyeCatcherJsonSpec;
 // 	sromImages?: SromImagesJsonSpec;
 // 	tilesets?: TilesetsJsonSpec;
@@ -245,7 +205,7 @@ export const JsonInput = t.intersection([
 	}),
 	t.partial({
 		padCROMFilesTo: t.union([t.number, t.null, t.undefined]),
-		palettes: t.union([PalettesSpec, t.null, t.undefined]),
+		codeEmit: t.union([CodeEmitJsonSpec, t.null, t.undefined]),
 		eyecatcher: t.union([EyeCatcherJsonSpec, t.null, t.undefined]),
 		sromImages: t.union([SromImagesJsonSpec, t.null, t.undefined]),
 		tilesets: t.union([TilesetsJsonSpec, t.null, t.undefined]),

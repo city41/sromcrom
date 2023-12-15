@@ -4,10 +4,14 @@ import path from 'path';
 import { Command } from 'commander';
 import { orchestrate as cromOrchestrate } from './orchestrators/cromOrchestrator';
 import { orchestrate as sromOrchestrate } from './orchestrators/sromOrchestrator';
-import { orchestrate as paletteOrchestrate } from './orchestrators/paletteOrchestrator';
 import { writeFiles } from './writeFiles';
-import { Palette16Bit } from './api/palette/types';
 import { validateInputJson } from './validateInputJson';
+import { BLACK_PALETTE } from './api/palette/blackPalette';
+import { emit } from './emit/emit';
+
+import type { CodeEmitData } from './types';
+import type { Palette16Bit } from './api/palette/types';
+export type { CodeEmitData };
 
 const packageJson = require('../package.json');
 
@@ -50,15 +54,27 @@ const sromAndCromPalettesToEmit: Palette16Bit[] =
 		cromOrchestrateResult.palettesToEmit
 	);
 
-const paletteOrchestrateResult = paletteOrchestrate(
-	rootDir,
-	resourceJson,
-	sromAndCromPalettesToEmit
+const finalPalettes = BLACK_PALETTE.concat(sromAndCromPalettesToEmit);
+
+const filesToWrite = cromOrchestrateResult.filesToWrite.concat(
+	sromOrchestrateResult.filesToWrite
 );
 
+if (resourceJson.codeEmit) {
+	const codeEmitData: CodeEmitData = {
+		...sromOrchestrateResult.codeEmitData,
+		...cromOrchestrateResult.codeEmitData,
+		palettes: finalPalettes,
+	};
+
+	const codeEmitFilesToWrite = emit(
+		rootDir,
+		resourceJson.codeEmit,
+		codeEmitData
+	);
+	filesToWrite.push(...codeEmitFilesToWrite);
+}
+
 writeFiles(
-	cromOrchestrateResult.filesToWrite.concat(
-		sromOrchestrateResult.filesToWrite,
-		paletteOrchestrateResult.filesToWrite
-	)
+	cromOrchestrateResult.filesToWrite.concat(sromOrchestrateResult.filesToWrite)
 );

@@ -3,7 +3,7 @@ import path from 'path';
 import { Palette16Bit } from '../../api/palette/types';
 import { CROMTile, ICROMGenerator } from '../../api/crom/types';
 import { determinePalettesToEmit } from '../common/determinePalettesToEmit';
-import { FileToWrite, JsonInput } from '../../types';
+import { FileToWrite, JsonInput, CodeEmitData } from '../../types';
 import { indexCroms } from './indexCroms';
 import { markCromDupes } from './markCromDupes';
 import { positionCroms } from './positionCroms';
@@ -28,7 +28,11 @@ function orchestrate(
 	rootDir: string,
 	input: JsonInput,
 	palettesStartingIndex: number
-): { palettesToEmit: Palette16Bit[]; filesToWrite: FileToWrite[] } {
+): {
+	palettesToEmit: Palette16Bit[];
+	filesToWrite: FileToWrite[];
+	codeEmitData: CodeEmitData;
+} {
 	const cromGenerators = availableCROMGenerators
 		.filter((generatorKey) => !!input[generatorKey as keyof JsonInput])
 		.map((generatorKey) => {
@@ -110,26 +114,25 @@ function orchestrate(
 		);
 	}
 
-	const otherFilesToWrite = cromSourcesResult.reduce<FileToWrite[]>(
-		(building, sromResult) => {
-			if (sromResult.generator.getCROMSourceFiles) {
-				return building.concat(
-					sromResult.generator.getCROMSourceFiles(
+	const codeEmitData = cromSourcesResult.reduce<CodeEmitData>(
+		(building, cromResult) => {
+			if (cromResult.generator.getCodeEmitData) {
+				building[cromResult.generator.jsonKey as keyof CodeEmitData] =
+					cromResult.generator.getCodeEmitData(
 						rootDir,
-						input[sromResult.generator.jsonKey as keyof JsonInput],
-						sromResult.tiles
-					)
-				);
-			} else {
-				return building;
+						input[cromResult.generator.jsonKey as keyof JsonInput],
+						cromResult.tiles
+					);
 			}
+			return building;
 		},
-		[]
+		{} as unknown as CodeEmitData
 	);
 
 	return {
 		palettesToEmit: finalPalettes,
-		filesToWrite: cromFilesToWrite.concat(otherFilesToWrite),
+		filesToWrite: cromFilesToWrite,
+		codeEmitData,
 	};
 }
 

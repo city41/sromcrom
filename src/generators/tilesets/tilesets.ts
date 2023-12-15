@@ -6,7 +6,6 @@ import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { sliceOutFrame } from '../../api/tile/sliceOutFrame';
 import { TilesetInput, TilesetsJsonSpec } from '../../types';
-import { emit } from '../../emit/emit';
 
 type CodeEmitTile = {
 	index: number;
@@ -17,7 +16,7 @@ type CodeEmitTile = {
 type CodeEmitTileMatrixRow = Array<CodeEmitTile | null>;
 type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
 
-type CodeEmitImage = {
+export type CodeEmitTileset = {
 	name: string;
 	imageFile: string;
 	tiles: CodeEmitTileMatrix;
@@ -86,7 +85,7 @@ function toCodeEmitTiles(
 function createTilesetDataForCodeEmit(
 	inputs: TilesetInput[],
 	tiles: CROMTileMatrix[]
-): CodeEmitImage[] {
+): CodeEmitTileset[] {
 	const finalTiles = denormalizeDupes(tiles, 'cromIndex');
 
 	return inputs.map((input, i) => {
@@ -97,11 +96,9 @@ function createTilesetDataForCodeEmit(
 	});
 }
 
-const tilesets: ICROMGenerator<TilesetsJsonSpec> = {
+const tilesets: ICROMGenerator<TilesetsJsonSpec, CodeEmitTileset[]> = {
 	jsonKey: 'tilesets',
-	getCROMSources(rootDir, input) {
-		const { inputs } = input;
-
+	getCROMSources(rootDir, inputs) {
 		return inputs.map((input) => {
 			const context = getCanvasContextFromImagePath(
 				path.resolve(rootDir, input.imageFile)
@@ -136,30 +133,9 @@ const tilesets: ICROMGenerator<TilesetsJsonSpec> = {
 			return allTiles;
 		});
 	},
-	getCROMSourceFiles(rootDir, input, tiles) {
-		const { inputs, codeEmit } = input;
 
-		if (!codeEmit) {
-			return [];
-		}
-
-		const { preEmit } = codeEmit;
-
-		const tilesets = createTilesetDataForCodeEmit(inputs, tiles);
-
-		let renderData: Record<string, unknown>;
-
-		if (preEmit) {
-			const preEmitPath = path.resolve(rootDir, preEmit);
-			const preEmitModule = require(preEmitPath);
-			// the module may be commonjs or esm
-			const preEmitFn = preEmitModule.default ?? preEmitModule;
-			renderData = preEmitFn(rootDir, tilesets);
-		} else {
-			renderData = { tilesets };
-		}
-
-		return emit(rootDir, codeEmit, renderData);
+	getCodeEmitData(_rootDir, inputs, tiles) {
+		return createTilesetDataForCodeEmit(inputs, tiles);
 	},
 };
 

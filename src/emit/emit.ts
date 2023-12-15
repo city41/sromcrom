@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import Handlebars from 'handlebars';
-import { CodeEmit, FileToWrite } from '../types';
+import { CodeEmitData, CodeEmitJsonSpec, FileToWrite } from '../types';
 
 function extractNumbersFromArgs(args: unknown[]) {
 	const nums = [];
@@ -165,20 +165,35 @@ Handlebars.registerHelper('bin', (a: unknown) => {
 
 function emit(
 	rootDir: string,
-	codeEmit: CodeEmit | null | undefined,
-	renderData: Record<string, unknown>
+	codeEmit: CodeEmitJsonSpec,
+	codeEmitData: CodeEmitData
 ): FileToWrite[] {
-	return (codeEmit?.inputs ?? []).map<FileToWrite>((codeEmit) => {
+	const { preEmit } = codeEmit;
+
+	if (preEmit) {
+		const preEmitPath = path.resolve(rootDir, preEmit);
+		const preEmitModule = require(preEmitPath);
+		// the module may be commonjs or esm
+		const preEmitFn = preEmitModule.default ?? preEmitModule;
+		codeEmitData = preEmitFn(rootDir, codeEmitData);
+	}
+
+	return codeEmit.inputs.map<FileToWrite>((codeEmit) => {
 		const templatePath = path.resolve(rootDir, codeEmit.template);
-		const templateSrc = fs.readFileSync(templatePath).toString();
-		const template = Handlebars.compile(templateSrc, { noEscape: true });
+		try {
+			const templateSrc = fs.readFileSync(templatePath).toString();
+			const template = Handlebars.compile(templateSrc, { noEscape: true });
 
-		const code = template(renderData);
+			const code = template(codeEmitData);
 
-		return {
-			path: path.resolve(rootDir, codeEmit.dest),
-			contents: Buffer.from(code),
-		};
+			return {
+				path: path.resolve(rootDir, codeEmit.dest),
+				contents: Buffer.from(code),
+			};
+		} catch (e) {
+			const message = e instanceof Error ? e.message : String(e);
+			throw new Error(`code emit error for ${templatePath}: ${message}`);
+		}
 	});
 }
 

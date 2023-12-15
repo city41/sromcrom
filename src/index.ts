@@ -54,7 +54,9 @@ const sromAndCromPalettesToEmit: Palette16Bit[] =
 		cromOrchestrateResult.palettesToEmit
 	);
 
-const finalPalettes = BLACK_PALETTE.concat(sromAndCromPalettesToEmit);
+const finalPalettes = ([BLACK_PALETTE] as Palette16Bit[]).concat(
+	sromAndCromPalettesToEmit
+);
 
 const filesToWrite = cromOrchestrateResult.filesToWrite.concat(
 	sromOrchestrateResult.filesToWrite

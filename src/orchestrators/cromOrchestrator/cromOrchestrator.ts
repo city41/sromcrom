@@ -14,6 +14,7 @@ import { tilesets } from '../../generators/tilesets';
 import { cromImages } from '../../generators/cromImages';
 import { cromAnimations } from '../../generators/cromAnimations';
 import { cromFFBlankGenerator } from './cromFFBlankGenerator';
+import { confirmTilesAre16ColorsOrLess } from '../common/confirmTilesAre16ColorsOrLess';
 
 // create crom tile generators based on what is in the json file
 const generators: Record<string, ICROMGenerator> = {
@@ -65,6 +66,8 @@ function orchestrate(
 	if (new Set(allTiles).size !== allTiles.length) {
 		throw new Error('the same tile ref was added more than once');
 	}
+
+	confirmTilesAre16ColorsOrLess(allTiles);
 
 	const finalPalettes = determinePalettesToEmit(
 		allTiles,

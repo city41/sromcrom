@@ -22,7 +22,7 @@ export type FileToWrite = {
 
 export type BaseTile = {
 	/**
-	 * the modern png/aseprite source for this tile,
+	 * the modern png source for this tile,
 	 */
 	canvasSource: Canvas;
 

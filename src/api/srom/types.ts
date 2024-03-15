@@ -26,6 +26,7 @@ export type SROMTile = BaseTile & {
 export type SROMTileMatrixCol = SROMTile[];
 export type SROMTileMatrix = SROMTileMatrixCol[];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SROMSourceResult<TInput = any> = {
 	tiles: SROMTileMatrix;
 	input: TInput;

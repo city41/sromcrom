@@ -163,11 +163,11 @@ Handlebars.registerHelper('bin', (a: unknown) => {
 	return an.toString(2);
 });
 
-function emit(
+async function emit(
 	rootDir: string,
 	codeEmit: CodeEmitJsonSpec,
 	codeEmitData: CodeEmitData
-): FileToWrite[] {
+): Promise<FileToWrite[]> {
 	const { preEmit } = codeEmit;
 
 	if (preEmit) {
@@ -175,7 +175,7 @@ function emit(
 		const preEmitModule = require(preEmitPath);
 		// the module may be commonjs or esm
 		const preEmitFn = preEmitModule.default ?? preEmitModule;
-		codeEmitData = preEmitFn(rootDir, codeEmitData);
+		codeEmitData = await preEmitFn(rootDir, codeEmitData);
 	}
 
 	return codeEmit.inputs.map<FileToWrite>((codeEmit) => {

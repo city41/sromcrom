@@ -69,12 +69,12 @@ if (resourceJson.codeEmit) {
 		palettes: finalPalettes,
 	};
 
-	const codeEmitFilesToWrite = emit(
-		rootDir,
-		resourceJson.codeEmit,
-		codeEmitData
+	emit(rootDir, resourceJson.codeEmit, codeEmitData).then(
+		(codeEmitFilesToWrite) => {
+			filesToWrite.push(...codeEmitFilesToWrite);
+			writeFiles(filesToWrite);
+		}
 	);
-	filesToWrite.push(...codeEmitFilesToWrite);
+} else {
+	writeFiles(filesToWrite);
 }
-
-writeFiles(filesToWrite);

@@ -6,5 +6,9 @@
 			"name": "test",
 			"imageFile": "./test.png"
 		}
-	]
+	],
+	"codeEmit": {
+		"preEmit": "./testCodeEmit.js",
+		"inputs": []
+	}
 }

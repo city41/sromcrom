@@ -1,4 +1,5 @@
 import path from 'path';
+import { Canvas } from 'canvas';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
 import {
@@ -12,6 +13,7 @@ import { SromImageInput, SromImagesJsonSpec } from '../../types';
 type CodeEmitTile = {
 	index: number;
 	paletteIndex: number;
+	canvasSource: Canvas;
 };
 
 type CodeEmitTileMatrixRow = CodeEmitTile[];
@@ -29,6 +31,7 @@ function toCodeEmitTiles(inputTiles: SROMTileMatrix): CodeEmitTileMatrix {
 			return {
 				index: inputTile.sromIndex!,
 				paletteIndex: inputTile.paletteIndex!,
+				canvasSource: inputTile.canvasSource,
 			};
 		});
 	});

@@ -1,4 +1,5 @@
 import path from 'path';
+import { Canvas } from 'canvas';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
@@ -14,6 +15,7 @@ import {
 type CodeEmitTile = {
 	index: number;
 	paletteIndex: number;
+	canvasSource: Canvas;
 };
 
 type CodeEmitTileMatrixRow = CodeEmitTile[];
@@ -46,6 +48,7 @@ function toCodeEmitTiles(inputTiles: CROMTileMatrix): CodeEmitTileMatrix {
 			return {
 				index: inputTile.cromIndex!,
 				paletteIndex: inputTile.paletteIndex!,
+				canvasSource: inputTile.canvasSource,
 			};
 		});
 	});

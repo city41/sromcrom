@@ -1,4 +1,5 @@
 import path from 'path';
+import { Canvas } from 'canvas';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
 import { ICROMGenerator, CROMTile, CROMTileMatrix } from '../../api/crom/types';
@@ -11,6 +12,7 @@ type CodeEmitTile = {
 	index: number;
 	paletteIndex: number;
 	autoAnimation?: 4 | 8;
+	canvasSource: Canvas;
 };
 
 type CodeEmitTileMatrixRow = CodeEmitTile[];
@@ -57,6 +59,7 @@ function toCodeEmitTiles(
 			return {
 				index: inputTile.cromIndex!,
 				paletteIndex: inputTile.paletteIndex!,
+				canvasSource: inputTile.canvasSource,
 			};
 		});
 	});

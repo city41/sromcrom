@@ -1,6 +1,6 @@
 {
 	"name": "@city41/sromcrom",
-	"version": "0.18.2",
+	"version": "0.18.3",
 	"main": "lib/index.js",
 	"types": "lib/types.d.ts",
 	"files": [

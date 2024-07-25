@@ -1,22 +1,15 @@
 import path from 'path';
-import { Canvas } from 'canvas';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
 import { ICROMGenerator, CROMTile, CROMTileMatrix } from '../../api/crom/types';
 import { CROM_TILE_SIZE_PX } from '../..//api/crom/constants';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { sliceOutFrame } from '../../api/tile/sliceOutFrame';
-import { CromImageInput, CromImagesInputJsonSpec } from '../../types';
-
-type CodeEmitTile = {
-	index: number;
-	paletteIndex: number;
-	autoAnimation?: 4 | 8;
-	canvasSource: Canvas;
-};
-
-type CodeEmitTileMatrixRow = CodeEmitTile[];
-type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
+import {
+	CodeEmitTileMatrix,
+	CromImageInput,
+	CromImagesInputJsonSpec,
+} from '../../types';
 
 export type CodeEmitCromImage = {
 	name: string;

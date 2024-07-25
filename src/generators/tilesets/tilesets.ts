@@ -1,22 +1,15 @@
 import path from 'path';
-import { Canvas } from 'canvas';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
 import { CROMTile, CROMTileMatrix, ICROMGenerator } from '../../api/crom/types';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { sliceOutFrame } from '../../api/tile/sliceOutFrame';
-import { TilesetInput, TilesetsJsonSpec } from '../../types';
-
-type CodeEmitTile = {
-	index: number;
-	paletteIndex: number;
-	autoAnimation?: 4 | 8;
-	canvasSource: Canvas;
-};
-
-type CodeEmitTileMatrixRow = Array<CodeEmitTile | null>;
-type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
+import {
+	CodeEmitTileMatrix,
+	TilesetInput,
+	TilesetsJsonSpec,
+} from '../../types';
 
 export type CodeEmitTileset = {
 	name: string;

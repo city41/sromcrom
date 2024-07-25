@@ -6,6 +6,15 @@ import { CodeEmitSromImage } from './generators/sromImages';
 import { CodeEmitTileset } from './generators/tilesets';
 import { CodeEmitCromImage } from './generators/cromImages';
 
+export type CodeEmitTile = {
+	index: number;
+	paletteIndex: number;
+	autoAnimation?: 4 | 8;
+	canvasSource: Canvas;
+};
+export type CodeEmitTileMatrixRow = Array<CodeEmitTile | null>;
+export type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
+
 export {
 	Palette16Bit,
 	CodeEmitSromImage,

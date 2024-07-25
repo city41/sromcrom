@@ -1,5 +1,4 @@
 import path from 'path';
-import { Canvas } from 'canvas';
 import { CROM_TILE_SIZE_PX } from '../../api/crom/constants';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractCromTileSources } from '../../api/crom/extractCromTileSources';
@@ -7,19 +6,11 @@ import { CROMTile, CROMTileMatrix, ICROMGenerator } from '../../api/crom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
 import { sliceOutFrame } from '../../api/tile/sliceOutFrame';
 import {
+	CodeEmitTileMatrix,
 	CromAnimation,
 	CromAnimationInput,
 	CromAnimationsInputJsonSpec,
 } from '../../types';
-
-type CodeEmitTile = {
-	index: number;
-	paletteIndex: number;
-	canvasSource: Canvas;
-};
-
-type CodeEmitTileMatrixRow = CodeEmitTile[];
-type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
 
 type CodeEmitAnimation = {
 	name: string;

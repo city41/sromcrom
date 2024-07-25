@@ -1,5 +1,4 @@
 import path from 'path';
-import { Canvas } from 'canvas';
 import { getCanvasContextFromImagePath } from '../../api/canvas/getCanvasContextFromImagePath';
 import { extractSromTileSources } from '../../api/srom/extractSromTileSources';
 import {
@@ -8,16 +7,11 @@ import {
 	SROMTileMatrix,
 } from '../../api/srom/types';
 import { denormalizeDupes } from '../../api/tile/denormalizeDupes';
-import { SromImageInput, SromImagesJsonSpec } from '../../types';
-
-type CodeEmitTile = {
-	index: number;
-	paletteIndex: number;
-	canvasSource: Canvas;
-};
-
-type CodeEmitTileMatrixRow = CodeEmitTile[];
-type CodeEmitTileMatrix = CodeEmitTileMatrixRow[];
+import {
+	CodeEmitTileMatrix,
+	SromImageInput,
+	SromImagesJsonSpec,
+} from '../../types';
 
 export type CodeEmitSromImage = {
 	name: string;

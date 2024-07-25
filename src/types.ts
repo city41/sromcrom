@@ -218,7 +218,13 @@ export const JsonInput = t.intersection([
 export type JsonInput = t.TypeOf<typeof JsonInput>;
 
 export type HookModule = {
-	init?: () => Promise<void>;
-	overrideInputData?: (input: JsonInput) => Promise<JsonInput>;
-	overrideEmitData?: (emitData: CodeEmitData) => Promise<CodeEmitData & any>;
+	init?: (resourceRootDir: string) => Promise<void>;
+	overrideInputData?: (
+		resourceRootDir: string,
+		input: JsonInput
+	) => Promise<JsonInput>;
+	overrideEmitData?: (
+		resourceRootDir: string,
+		emitData: CodeEmitData
+	) => Promise<CodeEmitData & any>;
 };

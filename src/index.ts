@@ -14,13 +14,13 @@ import type { Palette16Bit } from './api/palette/types';
 export type { CodeEmitData };
 
 const dummyHook: Required<HookModule> = {
-	init() {
+	init(_rootDir) {
 		return Promise.resolve();
 	},
-	overrideInputData(input) {
+	overrideInputData(_rootDir, input) {
 		return Promise.resolve(input);
 	},
-	overrideEmitData(emitData) {
+	overrideEmitData(_rootDir, emitData) {
 		return Promise.resolve(emitData);
 	},
 };
@@ -49,10 +49,13 @@ async function main(options: OptionValues) {
 			...inputHookModule,
 		};
 
-		await hookModule.init();
+		await hookModule.init(rootDir);
 	}
 
-	const resourceJson = await hookModule.overrideInputData(inputResourceJson);
+	const resourceJson = await hookModule.overrideInputData(
+		rootDir,
+		inputResourceJson
+	);
 
 	if (!validateInputJson(resourceJson)) {
 		console.error('After hook.overrideInputData, the input is no longer valid');
@@ -87,7 +90,10 @@ async function main(options: OptionValues) {
 			palettes: finalPalettes,
 		};
 
-		const codeEmitData = await hookModule.overrideEmitData(preCodeEmitData);
+		const codeEmitData = await hookModule.overrideEmitData(
+			rootDir,
+			preCodeEmitData
+		);
 
 		emit(rootDir, resourceJson.codeEmit, codeEmitData).then(
 			(codeEmitFilesToWrite) => {

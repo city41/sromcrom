@@ -6,6 +6,14 @@ import { CodeEmitSromImage } from './generators/sromImages';
 import { CodeEmitTileset } from './generators/tilesets';
 import { CodeEmitCromImage } from './generators/cromImages';
 
+export {
+	Palette16Bit,
+	CodeEmitSromImage,
+	CodeEmitTileset,
+	CodeEmitCromImage,
+	CodeEmitCromAnimationGroup,
+};
+
 // these don't use io-ts as they are not part of the input
 export type CodeEmitData = {
 	palettes: Palette16Bit[];

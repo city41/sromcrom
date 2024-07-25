@@ -192,6 +192,7 @@ export type CromAnimationsInputJsonSpec = t.TypeOf<
 // type JsonInput = {
 // 	romPathRoot: string;
 // 	padCROMFilesTo?: number;
+//  hookScript?: string;
 //  codeEmit?: CodeEmitSpec;
 // 	eyecatcher?: EyeCatcherJsonSpec;
 // 	sromImages?: SromImagesJsonSpec;
@@ -205,6 +206,7 @@ export const JsonInput = t.intersection([
 	}),
 	t.partial({
 		padCROMFilesTo: t.union([t.number, t.null, t.undefined]),
+		hookScript: t.union([t.string, t.null, t.undefined]),
 		codeEmit: t.union([CodeEmitJsonSpec, t.null, t.undefined]),
 		eyecatcher: t.union([EyeCatcherJsonSpec, t.null, t.undefined]),
 		sromImages: t.union([SromImagesJsonSpec, t.null, t.undefined]),
@@ -214,3 +216,9 @@ export const JsonInput = t.intersection([
 	}),
 ]);
 export type JsonInput = t.TypeOf<typeof JsonInput>;
+
+export type HookModule = {
+	init?: () => Promise<void>;
+	overrideInputData?: (input: JsonInput) => Promise<JsonInput>;
+	overrideEmitData?: (emitData: CodeEmitData) => Promise<CodeEmitData & any>;
+};

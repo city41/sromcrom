@@ -1,6 +1,7 @@
 {
 	"romPathRoot": "./out/test-",
 	"padCROMFilesTo": 1048576,
+	"hookScript": "./testHook.js",
 	"cromImages": [
 		{
 			"name": "test",

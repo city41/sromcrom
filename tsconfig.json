@@ -14,6 +14,7 @@
 		"esModuleInterop": true,
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,
+		"declaration": true,
 		"skipLibCheck": true,
 		"paths": {
 			"*": ["node_modules/*", "src/types/*"]

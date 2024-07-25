@@ -2,8 +2,10 @@
 	"name": "@city41/sromcrom",
 	"version": "0.18.0",
 	"main": "lib/index.js",
+	"types": "lib/types.d.ts",
 	"files": [
-		"lib/**/*.js"
+		"lib/**/*.js",
+		"lib/**/*.d.ts"
 	],
 	"bin": {
 		"sromcrom": "./lib/index.js"

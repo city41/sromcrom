@@ -244,4 +244,5 @@ export type HookModule = {
 		resourceRootDir: string,
 		emitData: CodeEmitData
 	) => Promise<CodeEmitData & any>;
+	cleanup?: (resourceRootDir: string) => Promise<void>;
 };

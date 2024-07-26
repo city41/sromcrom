@@ -13,6 +13,10 @@ const hook = {
 		console.log(emitData);
 		return Promise.resolve(emitData);
 	},
+	cleanup(rootDir) {
+		console.log('test hook cleanup', rootDir);
+		return Promise.resolve();
+	},
 };
 
 module.exports = hook;

@@ -23,6 +23,9 @@ const dummyHook: Required<HookModule> = {
 	overrideEmitData(_rootDir, emitData) {
 		return Promise.resolve(emitData);
 	},
+	cleanup(_rootDir) {
+		return Promise.resolve();
+	},
 };
 
 async function main(options: OptionValues) {
@@ -95,15 +98,16 @@ async function main(options: OptionValues) {
 			preCodeEmitData
 		);
 
-		emit(rootDir, resourceJson.codeEmit, codeEmitData).then(
-			(codeEmitFilesToWrite) => {
-				filesToWrite.push(...codeEmitFilesToWrite);
-				writeFiles(filesToWrite);
-			}
+		const codeEmitFilesToWrite = await emit(
+			rootDir,
+			resourceJson.codeEmit,
+			codeEmitData
 		);
-	} else {
-		writeFiles(filesToWrite);
+		filesToWrite.push(...codeEmitFilesToWrite);
 	}
+	writeFiles(filesToWrite);
+
+	await hookModule.cleanup(rootDir);
 }
 
 const packageJson = require('../package.json');

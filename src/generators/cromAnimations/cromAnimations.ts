@@ -12,7 +12,7 @@ import {
 	CromAnimationsInputJsonSpec,
 } from '../../types';
 
-type CodeEmitAnimation = {
+export type CodeEmitAnimation = {
 	name: string;
 	imageFile: string;
 	duration?: number | null;

@@ -1,7 +1,10 @@
 import * as t from 'io-ts';
 import { Canvas } from 'canvas';
 import { Palette16Bit } from './api/palette/types';
-import { CodeEmitCromAnimationGroup } from './generators/cromAnimations';
+import {
+	CodeEmitCromAnimationGroup,
+	CodeEmitAnimation,
+} from './generators/cromAnimations';
 import { CodeEmitSromImage } from './generators/sromImages';
 import { CodeEmitTileset } from './generators/tilesets';
 import { CodeEmitCromImage } from './generators/cromImages';
@@ -21,6 +24,7 @@ export {
 	CodeEmitTileset,
 	CodeEmitCromImage,
 	CodeEmitCromAnimationGroup,
+	CodeEmitAnimation,
 };
 
 // these don't use io-ts as they are not part of the input

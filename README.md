@@ -15,7 +15,7 @@ Sromcrom allows you to generate code using handlebars templates, so it has almos
 - tile deduping for both srom and crom
 - frame based crom animations
 - tileset auto animations
-  - tilesets are typically used to from backgrounds
+  - tilesets are typically used to form backgrounds
 - merging of palettes
 - ensures the first color of palette zero is the required black
 - code generation via handlebars templates
